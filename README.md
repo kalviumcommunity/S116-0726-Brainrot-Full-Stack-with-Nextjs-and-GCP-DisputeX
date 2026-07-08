@@ -1,4 +1,4 @@
-# S[SquadNumber]-0726-[TeamName]-Full-Stack-With-Nextjs-And-GCP-Postgres-Merchant-Dispute-Portal
+# S116-0726-Brainrot-Full-Stack-With-Nextjs-And-GCP-Postgres-DisputeX
 
 ## Problem statement
 
