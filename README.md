@@ -1,4 +1,4 @@
-# S116-0726-Brainrot-Full-Stack-With-Nextjs-And-GCP-Postgres-DisputeX
+# S116-0726-Brainrot-Full-Stack-With-Nextjs-And-GCP-Postgres-DisputeX.
 
 ## Problem statement
 
