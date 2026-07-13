@@ -1,4 +1,4 @@
-# DisputeX
+# DisputeX.
 
 DisputeX is an enterprise-grade dispute management platform designed for chargeback evidence collection, merchant workflows, and automated escalation.
 
