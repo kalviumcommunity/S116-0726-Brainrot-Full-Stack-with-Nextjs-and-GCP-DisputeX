@@ -1,102 +1,82 @@
-# S116-0726-Brainrot-Full-Stack-With-Nextjs-And-GCP-Postgres-DisputeX.
+# DisputeX
 
-## Problem statement
+DisputeX is an enterprise-grade dispute management platform designed for chargeback evidence collection, merchant workflows, and automated escalation.
 
-Razorpay wants a merchant dispute portal where sellers upload evidence against chargebacks. Each dispute has a 7-day timer; merchants get daily reminders, and cases auto-escalate if no response. All evidence must be stored immutably.
+## Architecture Overview
 
-## Team
+The repository is structured into three primary layers:
 
-| Name | Role |
-|---|---|
-| Shubham | Frontend |
-| Yashraj  | Backend |
-| Aditya | Infra / Database |
+- `frontend/` ? feature-based frontend application and shared UI modules.
+- `backend/` ? layered backend with controllers, services, repositories, and supporting infrastructure.
+- `database/` ? schemas, migrations, seed data, and backup documentation for persistence.
 
-## Tech stack
+Supporting directories:
 
-- **Frontend**: Next.js
-- **Backend**: Node.js API (within/alongside Next.js)
-- **Database**: PostgreSQL
-- **ORM**: Prisma
-- **Cloud**: GCP (Cloud SQL, Cloud Storage, Cloud Scheduler, Cloud Run)
-- **CI/CD**: GitHub Actions
+- `docs/` ? architecture, API, database, and development guide documentation.
+- `tests/` ? sample unit and integration test scaffolding.
 
-## Core features
+## Folder Responsibilities
 
-- Merchant authentication and dashboard
-- Dispute creation with a 7-day response deadline
-- Evidence upload against each dispute
-- Immutable evidence storage (GCS bucket with Object Versioning + retention policy)
-- Daily automated reminders as the deadline approaches
-- Automatic escalation of unresolved disputes past the deadline
-- Full audit trail of every status change
+### `frontend/`
 
-## Architecture
+Organized by feature and shared abstractions to enable independent frontend development.
 
-```
-Merchant → Next.js frontend → Node.js API
-                                  ├── PostgreSQL (disputes, users, audit log)
-                                  ├── GCS bucket (immutable evidence)
-                                  └── Cloud Scheduler (daily reminder + escalation cron)
-```
+- `app/` ? application entry points and pages.
+- `assets/` ? static assets and asset exports.
+- `components/` ? reusable UI components grouped by common, layout, evidence, notifications, timeline, settings, and ui primitives.
+- `features/` ? feature modules for evidence, notifications, timeline, and settings.
+- `hooks/` ? shared React hooks and UI state helpers.
+- `services/` ? API wrappers and frontend service abstractions.
+- `lib/` ? shared utilities such as fetchers.
+- `constants/` ? application-wide constants.
+- `utils/` ? helper functions and validation utilities.
+- `styles/` ? theme and styling contracts.
+- `types/` ? shared TypeScript type definitions.
 
-## Database schema (high level)
+### `backend/`
 
-- **users** — merchant and admin accounts
-- **disputes** — status, deadline, escalated_at, linked merchant
-- **evidence** — dispute_id, gcs_path, checksum, uploaded_at (insert-only, never updated)
-- **audit_log** — every state transition, with timestamp and actor
+Structured as a layered architecture for separation of concerns.
 
-## Dispute lifecycle
+- `controllers/` ? request handlers and API controller entry points.
+- `services/` ? orchestration and business service layer.
+- `repositories/` ? data access and persistence abstractions.
+- `models/` ? domain model contracts.
+- `routes/` ? API route definitions and composition.
+- `middleware/` ? request lifecycle middleware, auth, validation, and error handling.
+- `validators/` ? backend input validation.
+- `config/` ? application and environment configuration.
+- `jobs/` ? scheduled jobs and background tasks.
+- `storage/` ? storage service abstractions for file and evidence handling.
+- `interfaces/` ? shared request, response, and error interfaces.
+- `utils/` ? logging, response helpers, and utility helpers.
+- `types/` ? backend-specific type definitions.
 
-```
-open → evidence_submitted → resolved
-open → escalated (if deadline passes with no evidence)
-```
+### `database/`
 
-## Getting started
+Contains schema definitions, migration scaffolding, seed scripts, and backup guidance.
 
-### Prerequisites
+- `schemas/` ? dispute, evidence, notification, activity, and user schema files.
+- `migrations/` ? database versioning and migration stubs.
+- `seed/` ? initial dataset and environment seed scripts.
+- `backups/` ? backup strategy notes and restore guidance.
 
-- Node.js ≥ 20
-- PostgreSQL instance (local or Cloud SQL)
-- GCP project with a Cloud Storage bucket and Cloud Scheduler enabled
+### `docs/`
 
-### Setup
+Contains core project documentation:
 
-```bash
-git clone <repo-url>
-cd <repo-folder>
-npm install
-cp .env.example .env   # fill in DATABASE_URL, GCS bucket name, credentials
-npx prisma migrate dev
-npm run dev
-```
+- `architecture.md` ? architecture overview and responsibilities.
+- `api.md` ? API contract and endpoint descriptions.
+- `database.md` ? database schema, migration, and backup documentation.
+- `development-guide.md` ? developer setup and contribution workflows.
 
-### Environment variables
+### `tests/`
 
-```
-DATABASE_URL=
-GCS_BUCKET_NAME=
-GCS_PROJECT_ID=
-GOOGLE_APPLICATION_CREDENTIALS=
-CRON_SECRET=
-```
+Contains starter test scaffolding for:
 
-## API endpoints (draft)
+- `tests/frontend/` ? frontend unit tests.
+- `tests/backend/` ? backend unit tests.
+- `tests/integration/` ? full end-to-end and integration tests.
 
-| Method | Route | Description |
-|---|---|---|
-| POST | /api/auth/login | Merchant/admin login |
-| GET | /api/disputes | List disputes for the logged-in merchant |
-| GET | /api/disputes/:id | Get a single dispute with evidence and timeline |
-| POST | /api/disputes/:id/evidence | Upload evidence (immutable) |
-| POST | /api/cron/check-disputes | Triggered by Cloud Scheduler — sends reminders, escalates overdue disputes |
+## Development Notes
 
-## CI/CD
-
-GitHub Actions runs lint + tests on every PR, and deploys to Cloud Run on merge to `main`.
-
-## Project status
-
-Week 1 of 3 — schema design and initial setup in progress.
+This repository layout is scaffolded for future development. No business logic is implemented yet; each directory contains starter files so multiple developers can begin work independently.
