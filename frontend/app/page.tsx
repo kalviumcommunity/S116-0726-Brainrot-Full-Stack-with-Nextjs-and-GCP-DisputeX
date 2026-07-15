@@ -14,6 +14,20 @@ type Mode = "signin" | "signup";
 // Role determines the access level of the user
 type Role = "merchant" | "admin" | null;
 
+const Logo = () => (
+  <div className="flex justify-center mb-6">
+    <img 
+      src="/logo.jpeg" 
+      alt="Dispute Portal Logo" 
+      className="h-20 w-20 object-contain drop-shadow-sm rounded-full bg-white p-1"
+      onError={(e) => {
+        e.currentTarget.style.display = 'none';
+        e.currentTarget.parentElement!.innerHTML = '<div class="h-16 w-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-xl shadow-sm border border-blue-200">DP</div>';
+      }}
+    />
+  </div>
+);
+
 export default function AuthPage() {
   const router = useRouter();
   const [role, setRole] = useState<Role>(null);
@@ -55,20 +69,6 @@ export default function AuthPage() {
       setBusy(false);
     }
   };
-
-  const Logo = () => (
-    <div className="flex justify-center mb-6">
-      <img 
-        src="/logo.jpeg" 
-        alt="Dispute Portal Logo" 
-        className="h-20 w-20 object-contain drop-shadow-sm rounded-full bg-white p-1"
-        onError={(e) => {
-          e.currentTarget.style.display = 'none';
-          e.currentTarget.parentElement!.innerHTML = '<div class="h-16 w-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-xl shadow-sm border border-blue-200">DP</div>';
-        }}
-      />
-    </div>
-  );
 
   return (
     <div className="min-h-screen flex w-full font-sans">
@@ -197,7 +197,7 @@ export default function AuthPage() {
               <div className="mt-8 text-center text-sm">
                 {mode === "signin" ? (
                   <span className="text-slate-500">
-                    Don't have an account?{" "}
+                    Don&apos;t have an account?{" "}
                     <button onClick={() => setMode("signup")} className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors">
                       Sign up
                     </button>
