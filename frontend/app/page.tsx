@@ -9,7 +9,9 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, Store, Shield, ArrowLeft } from "lucide-react";
 
+// Mode defines whether the user is signing in or signing up
 type Mode = "signin" | "signup";
+// Role determines the access level of the user
 type Role = "merchant" | "admin" | null;
 
 export default function AuthPage() {
