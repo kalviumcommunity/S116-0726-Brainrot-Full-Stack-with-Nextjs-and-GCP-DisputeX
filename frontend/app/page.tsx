@@ -47,6 +47,8 @@ export default function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
+      // Temporarily bypassing Supabase auth so you can test the dashboard without .env keys
+      /*
       if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -62,6 +64,11 @@ export default function AuthPage() {
         toast.success("Account created! Check your email.");
         router.replace("/dashboard");
       }
+      */
+      
+      toast.success(mode === "signin" ? `Logged in as ${role} (Bypassed)` : "Account created! (Bypassed)");
+      router.replace("/dashboard");
+      
     } catch (error) {
       const err = error as Error;
       toast.error(err.message ?? "Something went wrong");
