@@ -3,7 +3,14 @@
 import { ShieldAlert, Clock, Mail, AlertTriangle, Trophy, XCircle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+/**
+ * DashboardPage Component
+ * Renders the main dashboard view for the merchant, including summary statistics, 
+ * upcoming deadlines, and recent activity feed.
+ */
 export default function DashboardPage() {
+    // Array of key statistics metrics to display at the top of the dashboard
+
     const stats = [
         { label: "TOTAL", value: "10", icon: ShieldAlert, color: "text-indigo-500", bg: "bg-indigo-50" },
         { label: "PENDING", value: "6", icon: Clock, color: "text-amber-500", bg: "bg-amber-50" },
