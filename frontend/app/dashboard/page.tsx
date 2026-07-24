@@ -2,6 +2,7 @@
 
 import { ShieldAlert, Clock, Mail, AlertTriangle, Trophy, XCircle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 /**
  * DashboardPage Component
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button";
  * upcoming deadlines, and recent activity feed.
  */
 export default function DashboardPage() {
+    const router = useRouter();
     // Array of key statistics metrics to display at the top of the dashboard
 
     const stats = [
@@ -44,7 +46,7 @@ export default function DashboardPage() {
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Good afternoon, No</h1>
                     <p className="text-slate-500 mt-1">You have <span className="font-semibold text-slate-700">6</span> disputes awaiting evidence.</p>
                 </div>
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2 rounded-lg px-5">
+                <Button onClick={() => router.push('/disputes')} className="bg-blue-600 hover:bg-blue-700 text-white gap-2 rounded-lg px-5">
                     View all disputes
                     <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -71,7 +73,7 @@ export default function DashboardPage() {
                             <h3 className="font-bold text-slate-900">Upcoming deadlines</h3>
                             <p className="text-sm text-slate-500">Prioritized by time remaining</p>
                         </div>
-                        <button className="text-sm font-semibold text-slate-700 hover:text-slate-900">All</button>
+                        <button onClick={() => router.push('/disputes')} className="text-sm font-semibold text-slate-700 hover:text-slate-900">All</button>
                     </div>
                     <div className="divide-y divide-slate-100">
                         {upcomingDeadlines.map((item, i) => (

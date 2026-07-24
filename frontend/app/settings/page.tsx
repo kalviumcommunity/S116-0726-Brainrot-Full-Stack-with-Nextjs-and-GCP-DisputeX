@@ -2,10 +2,21 @@
 
 import AppShell from "@/components/common/AppShell";
 import { Sun, Moon, Mail, Bell, AlertTriangle, LogOut } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {
-    const [theme, setTheme] = useState("light");
+    const { theme, setTheme, systemTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+    const router = useRouter();
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const currentTheme = theme === 'system' ? systemTheme : theme;
     const [notifications, setNotifications] = useState({
         email: true,
         daily: true,
@@ -13,7 +24,29 @@ export default function SettingsPage() {
     });
 
     const toggleNotification = (key: keyof typeof notifications) => {
-        setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
+        setNotifications(prev => {
+            const newState = { ...prev, [key]: !prev[key] };
+            toast.success("Preferences updated", {
+                description: "Your notification preferences have been saved.",
+            });
+            return newState;
+        });
+    };
+
+    const handleThemeChange = (newTheme: "light" | "dark") => {
+        setTheme(newTheme);
+        toast.success("Appearance updated", {
+            description: `Theme has been set to ${newTheme} mode.`,
+        });
+    };
+
+    const handleSignOut = () => {
+        toast.success("Signed out", {
+            description: "You have been successfully signed out of this device.",
+        });
+        setTimeout(() => {
+            router.push("/");
+        }, 1000);
     };
 
     return (
@@ -34,15 +67,15 @@ export default function SettingsPage() {
                         </div>
                         <div className="flex items-center gap-4">
                             <button
-                                onClick={() => setTheme("light")}
-                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium transition-all ${theme === "light" ? "bg-indigo-50 text-indigo-600 border border-indigo-200 shadow-sm" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}`}
+                                onClick={() => handleThemeChange("light")}
+                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium transition-all ${currentTheme === "light" ? "bg-indigo-50 text-indigo-600 border border-indigo-200 shadow-sm" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}`}
                             >
                                 <Sun className="h-4 w-4" />
                                 Light
                             </button>
                             <button
-                                onClick={() => setTheme("dark")}
-                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium transition-all ${theme === "dark" ? "bg-indigo-50 text-indigo-600 border border-indigo-200 shadow-sm" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}`}
+                                onClick={() => handleThemeChange("dark")}
+                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium transition-all ${currentTheme === "dark" ? "bg-indigo-50 text-indigo-600 border border-indigo-200 shadow-sm" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}`}
                             >
                                 <Moon className="h-4 w-4" />
                                 Dark
@@ -124,6 +157,7 @@ export default function SettingsPage() {
                             <p className="text-sm text-slate-500">Manage account access.</p>
                         </div>
                         <button
+                            onClick={handleSignOut}
                             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm"
                         >
                             <LogOut className="h-4 w-4" />

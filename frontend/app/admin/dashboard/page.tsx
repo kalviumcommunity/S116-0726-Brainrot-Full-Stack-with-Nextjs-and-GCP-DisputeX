@@ -3,8 +3,10 @@
 import AdminAppShell from "@/components/common/AdminAppShell";
 import { ShieldAlert, Clock, Mail, AlertTriangle, Trophy, Activity, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export default function AdminDashboardPage() {
+    const router = useRouter();
     const stats = [
         { label: "TOTAL", value: "60", icon: ShieldAlert, color: "text-indigo-500", bg: "bg-indigo-50" },
         { label: "OPEN", value: "27", icon: Clock, color: "text-amber-500", bg: "bg-amber-50" },
@@ -43,7 +45,7 @@ export default function AdminDashboardPage() {
                         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Control center</h1>
                         <p className="text-slate-500 mt-1">Overseeing <span className="font-semibold text-slate-700">21</span> merchants and <span className="font-semibold text-slate-700">60</span> disputes.</p>
                     </div>
-                    <Button className="bg-[#5B5CE6] hover:bg-indigo-600 text-white gap-2 rounded-xl px-5 h-11 font-medium shadow-sm transition-colors">
+                    <Button onClick={() => router.push('/admin/disputes')} className="bg-[#5B5CE6] hover:bg-indigo-600 text-white gap-2 rounded-xl px-5 h-11 font-medium shadow-sm transition-colors">
                         View all disputes
                         <ArrowRight className="h-4 w-4" />
                     </Button>
@@ -120,7 +122,7 @@ export default function AdminDashboardPage() {
                                 <h3 className="font-bold text-slate-900">Latest disputes</h3>
                                 <p className="text-sm text-slate-500">Most recent filings</p>
                             </div>
-                            <button className="text-sm font-semibold text-slate-900">All</button>
+                            <button onClick={() => router.push('/admin/disputes')} className="text-sm font-semibold text-slate-900">All</button>
                         </div>
                         <div className="divide-y divide-slate-100">
                             {latestDisputes.map((item, i) => (
