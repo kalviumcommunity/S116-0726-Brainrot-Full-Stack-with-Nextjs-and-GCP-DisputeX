@@ -2,6 +2,7 @@
 import AdminAppShell from "@/components/common/AdminAppShell";
 import { Search, ChevronDown, Eye, Clock, ShieldAlert, CheckCircle, XCircle, Check } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const DUMMY_DISPUTES = [
   {
@@ -97,10 +98,13 @@ const DUMMY_DISPUTES = [
 ];
 
 export default function AdminDisputesPage() {
+  const router = useRouter();
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("All statuses");
   const [isPriorityDropdownOpen, setIsPriorityDropdownOpen] = useState(false);
   const [selectedPriority, setSelectedPriority] = useState("All priorities");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
 
   const statuses = [
     "All statuses",
@@ -119,6 +123,53 @@ export default function AdminDisputesPage() {
     "Urgent"
   ];
 
+  const handleSort = (key: string) => {
+    let direction: "asc" | "desc" = "asc";
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const filteredDisputes = DUMMY_DISPUTES.filter((dispute) => {
+    if (selectedStatus !== "All statuses" && dispute.status !== selectedStatus) return false;
+    if (selectedPriority !== "All priorities" && dispute.priority.toLowerCase() !== selectedPriority.toLowerCase()) return false;
+    
+    if (searchQuery) {
+      const lowerQuery = searchQuery.toLowerCase();
+      const matchesSearch = 
+        dispute.id.toLowerCase().includes(lowerQuery) ||
+        dispute.transaction.toLowerCase().includes(lowerQuery) ||
+        dispute.merchant.toLowerCase().includes(lowerQuery);
+      if (!matchesSearch) return false;
+    }
+
+    return true;
+  });
+
+  const sortedDisputes = [...filteredDisputes].sort((a, b) => {
+    if (!sortConfig) return 0;
+
+    const { key, direction } = sortConfig;
+    
+    if (key === "id" || key === "transaction" || key === "merchant") {
+        return direction === "asc" ? a[key as keyof typeof a].localeCompare(b[key as keyof typeof b]) : b[key as keyof typeof b].localeCompare(a[key as keyof typeof a]);
+    }
+    if (key === "amount") {
+      const amountA = parseFloat(a.amount.replace(/[^0-9.-]+/g,""));
+      const amountB = parseFloat(b.amount.replace(/[^0-9.-]+/g,""));
+      return direction === "asc" ? amountA - amountB : amountB - amountA;
+    }
+    
+    if (key === "created") {
+      const dateA = new Date(a[key as keyof typeof a]).getTime();
+      const dateB = new Date(b[key as keyof typeof b]).getTime();
+      return direction === "asc" ? dateA - dateB : dateB - dateA;
+    }
+
+    return 0;
+  });
+
   return (
     <AdminAppShell>
       <div className="max-w-7xl mx-auto py-8">
@@ -127,7 +178,7 @@ export default function AdminDisputesPage() {
             <span className="text-red-500">ADMIN</span> <span className="mx-2">&middot;</span> DISPUTES
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-1">All Disputes</h1>
-          <p className="text-gray-500">60 of 60 disputes</p>
+          <p className="text-gray-500">{filteredDisputes.length} of {DUMMY_DISPUTES.length} disputes</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -139,6 +190,8 @@ export default function AdminDisputesPage() {
               <input
                 type="text"
                 placeholder="Search by ref, transaction, customer..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
@@ -213,23 +266,23 @@ export default function AdminDisputesPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Dispute ID ↑↓
+                  <th scope="col" onClick={() => handleSort('id')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
+                    Dispute ID {sortConfig?.key === 'id' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↑↓'}
+                  </th>
+                  <th scope="col" onClick={() => handleSort('merchant')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
+                    Merchant {sortConfig?.key === 'merchant' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↑↓'}
+                  </th>
+                  <th scope="col" onClick={() => handleSort('transaction')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
+                    Transaction {sortConfig?.key === 'transaction' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↑↓'}
+                  </th>
+                  <th scope="col" onClick={() => handleSort('amount')} className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
+                    Amount {sortConfig?.key === 'amount' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↑↓'}
+                  </th>
+                  <th scope="col" onClick={() => handleSort('created')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none">
+                    Created {sortConfig?.key === 'created' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↑↓'}
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Merchant
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Transaction ↑↓
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Amount ↑↓
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created ↑↓
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Deadline ↑↓
+                    Deadline
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -243,7 +296,7 @@ export default function AdminDisputesPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {DUMMY_DISPUTES.map((dispute) => (
+                {sortedDisputes.map((dispute) => (
                   <tr key={dispute.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {dispute.id}
@@ -288,7 +341,10 @@ export default function AdminDisputesPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                      <button className="text-gray-400 hover:text-gray-900 transition-colors">
+                      <button 
+                        onClick={() => router.push(`/admin/disputes/${dispute.id}`)}
+                        className="text-gray-400 hover:text-gray-900 transition-colors"
+                      >
                         <Eye className="h-5 w-5 mx-auto" />
                       </button>
                     </td>

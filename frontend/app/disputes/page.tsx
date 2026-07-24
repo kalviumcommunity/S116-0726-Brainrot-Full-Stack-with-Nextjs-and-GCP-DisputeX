@@ -2,6 +2,8 @@
 
 import AppShell from "@/components/common/AppShell";
 import { Search, SlidersHorizontal, Clock, AlertCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const disputesData = [
   { id: "DSP_11E71AE1DA10", bank: "ICICI Bank", transactionId: "pay_31Y3GKX5C5", amount: "3,027.89", customerName: "Meera Nair", customerEmail: "meera.n@icloud.com", created: "03 Jul 2026", deadline: "10 Jul 2026", remaining: "Expired", status: "Won", state: "Open" },
@@ -52,6 +54,57 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 export default function DisputesPage() {
+  const router = useRouter();
+  const [activeFilter, setActiveFilter] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
+
+  const filters = ["All", "Pending", "Responded", "Escalated", "Won", "Lost"];
+
+  const handleSort = (key: string) => {
+    let direction: "asc" | "desc" = "asc";
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const filteredDisputes = disputesData.filter((dispute) => {
+    if (activeFilter !== "All" && dispute.status !== activeFilter) return false;
+    
+    if (searchQuery) {
+      const lowerQuery = searchQuery.toLowerCase();
+      const matchesSearch = 
+        dispute.id.toLowerCase().includes(lowerQuery) ||
+        dispute.transactionId.toLowerCase().includes(lowerQuery) ||
+        dispute.customerName.toLowerCase().includes(lowerQuery) ||
+        dispute.bank.toLowerCase().includes(lowerQuery);
+      if (!matchesSearch) return false;
+    }
+
+    return true;
+  });
+
+  const sortedDisputes = [...filteredDisputes].sort((a, b) => {
+    if (!sortConfig) return 0;
+
+    const { key, direction } = sortConfig;
+    
+    if (key === "amount") {
+      const amountA = parseFloat(a.amount.replace(/,/g, ""));
+      const amountB = parseFloat(b.amount.replace(/,/g, ""));
+      return direction === "asc" ? amountA - amountB : amountB - amountA;
+    }
+    
+    if (key === "created" || key === "deadline") {
+      const dateA = new Date(a[key as keyof typeof a]).getTime();
+      const dateB = new Date(b[key as keyof typeof b]).getTime();
+      return direction === "asc" ? dateA - dateB : dateB - dateA;
+    }
+
+    return 0;
+  });
+
   return (
     <AppShell>
       <div className="w-full max-w-7xl mx-auto flex flex-col h-full bg-slate-50 font-sans p-2">
@@ -59,7 +112,7 @@ export default function DisputesPage() {
         <div className="mb-6">
           <p className="text-xs font-semibold text-slate-500 tracking-wider mb-1 uppercase">Disputes</p>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">All disputes</h1>
-          <p className="text-sm text-slate-500 mt-1">10 of 10 shown</p>
+          <p className="text-sm text-slate-500 mt-1">{filteredDisputes.length} of {disputesData.length} shown</p>
         </div>
 
         {/* Toolbar Section */}
@@ -70,6 +123,8 @@ export default function DisputesPage() {
             <input
               type="text"
               placeholder="Search by ID, transaction, customer, bank..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-10 pl-10 pr-4 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 placeholder:text-slate-400"
             />
           </div>
@@ -80,12 +135,19 @@ export default function DisputesPage() {
               <SlidersHorizontal className="h-4 w-4" />
             </button>
             <div className="flex gap-1 pl-2">
-              <button className="px-3 py-1.5 rounded-md bg-slate-100 text-slate-800 font-medium whitespace-nowrap">All</button>
-              <button className="px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-50 whitespace-nowrap">Pending</button>
-              <button className="px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-50 whitespace-nowrap">Responded</button>
-              <button className="px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-50 whitespace-nowrap">Escalated</button>
-              <button className="px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-50 whitespace-nowrap">Won</button>
-              <button className="px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-50 whitespace-nowrap">Lost</button>
+              {filters.map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setActiveFilter(filter)}
+                  className={`px-3 py-1.5 rounded-md font-medium whitespace-nowrap transition-colors ${
+                    activeFilter === filter
+                      ? "bg-slate-100 text-slate-800"
+                      : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -99,19 +161,19 @@ export default function DisputesPage() {
                   <th className="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Dispute</th>
                   <th className="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Transaction</th>
                   <th className="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    <div className="flex items-center gap-1 cursor-pointer hover:text-slate-700">
-                      Amount <span className="text-[10px]">↑↓</span>
+                    <div onClick={() => handleSort('amount')} className="flex items-center gap-1 cursor-pointer hover:text-slate-700 select-none">
+                      Amount <span className="text-[10px]">{sortConfig?.key === 'amount' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↑↓'}</span>
                     </div>
                   </th>
                   <th className="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</th>
                   <th className="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    <div className="flex items-center gap-1 cursor-pointer hover:text-slate-700">
-                      Created <span className="text-[10px]">↑↓</span>
+                    <div onClick={() => handleSort('created')} className="flex items-center gap-1 cursor-pointer hover:text-slate-700 select-none">
+                      Created <span className="text-[10px]">{sortConfig?.key === 'created' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↑↓'}</span>
                     </div>
                   </th>
                   <th className="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    <div className="flex items-center gap-1 cursor-pointer hover:text-slate-700">
-                      Deadline <span className="text-[10px]">↑↓</span>
+                    <div onClick={() => handleSort('deadline')} className="flex items-center gap-1 cursor-pointer hover:text-slate-700 select-none">
+                      Deadline <span className="text-[10px]">{sortConfig?.key === 'deadline' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↑↓'}</span>
                     </div>
                   </th>
                   <th className="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Remaining</th>
@@ -120,7 +182,7 @@ export default function DisputesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {disputesData.map((dispute, idx) => (
+                {sortedDisputes.map((dispute, idx) => (
                   <tr key={idx} className="hover:bg-slate-50 transition-colors group">
                     <td className="py-4 px-6 whitespace-nowrap">
                       <div className="font-semibold text-sm text-slate-900">{dispute.id}</div>
@@ -152,7 +214,12 @@ export default function DisputesPage() {
                       <StatusBadge status={dispute.status} />
                     </td>
                     <td className="py-4 px-6 whitespace-nowrap text-right">
-                      <span className="text-sm font-medium text-slate-900">{dispute.state}</span>
+                      <button
+                        onClick={() => router.push(`/disputes/${dispute.id}`)}
+                        className="px-4 py-1.5 bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors rounded-lg font-medium text-sm"
+                      >
+                        {dispute.state}
+                      </button>
                     </td>
                   </tr>
                 ))}
