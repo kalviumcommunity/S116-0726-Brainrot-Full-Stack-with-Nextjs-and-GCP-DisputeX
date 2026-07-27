@@ -16,7 +16,7 @@ export default function Sidebar() {
     ];
 
     return (
-        <aside className="w-64 bg-[#0B1021] text-slate-300 flex flex-col h-screen overflow-y-auto font-sans shadow-xl z-20 sticky top-0">
+        <aside className="w-64 min-w-[256px] shrink-0 bg-[#0B1021] text-slate-300 flex flex-col h-screen overflow-y-auto font-sans shadow-[4px_0_24px_rgba(0,0,0,0.4)] z-20 sticky top-0 border-r border-slate-700/60">
             {/* Logo area */}
             <div className="p-6 flex items-center gap-3">
                 <div className="bg-blue-600 rounded-md p-1.5 flex items-center justify-center">

@@ -44,28 +44,28 @@ const notifications = [
 export default function NotificationsPage() {
   return (
     <AppShell>
-      <div className="w-full max-w-7xl mx-auto flex flex-col h-full bg-slate-50 font-sans p-2">
+      <div className="w-full max-w-7xl mx-auto flex flex-col h-full font-sans p-2">
         {/* Header Section */}
         <div className="mb-6">
-          <p className="text-xs font-semibold text-slate-500 tracking-wider mb-1 uppercase">Notifications</p>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Inbox</h1>
-          <p className="text-sm text-slate-500 mt-1">0 unread of 5 total</p>
+          <p className="text-xs font-semibold text-muted-foreground tracking-wider mb-1 uppercase">Notifications</p>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">Inbox</h1>
+          <p className="text-sm text-muted-foreground mt-1">0 unread of 5 total</p>
         </div>
 
         {/* Notifications List */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6 flex-1 max-w-5xl">
-          <div className="flex flex-col divide-y divide-slate-100">
+        <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden mb-6 flex-1 max-w-5xl">
+          <div className="flex flex-col divide-y divide-border">
             {notifications.map((notification) => (
-              <div key={notification.id} className="flex p-6 hover:bg-slate-50/80 transition-colors">
+              <div key={notification.id} className="flex p-6 hover:bg-muted/40 transition-colors">
 
                 {/* Icon */}
                 <div className="mr-4 flex-shrink-0">
                   {notification.type === "escalated" ? (
-                    <div className="h-10 w-10 rounded-full bg-red-50 flex items-center justify-center border border-red-100">
+                    <div className="h-10 w-10 rounded-full bg-red-50 dark:bg-red-950 flex items-center justify-center border border-red-100 dark:border-red-900">
                       <AlertTriangle className="h-5 w-5 text-red-500" />
                     </div>
                   ) : (
-                    <div className="h-10 w-10 rounded-full bg-indigo-50 flex items-center justify-center border border-indigo-100">
+                    <div className="h-10 w-10 rounded-full bg-indigo-50 dark:bg-indigo-950 flex items-center justify-center border border-indigo-100 dark:border-indigo-900">
                       <Clock className="h-5 w-5 text-indigo-500" />
                     </div>
                   )}
@@ -73,13 +73,13 @@ export default function NotificationsPage() {
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-slate-900 mb-1">
+                  <h3 className="text-sm font-semibold text-foreground mb-1">
                     {notification.title}
                   </h3>
-                  <p className="text-sm text-slate-600 mb-2">
+                  <p className="text-sm text-muted-foreground mb-2">
                     {notification.description}
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-muted-foreground/60">
                     {notification.date}
                   </p>
                 </div>

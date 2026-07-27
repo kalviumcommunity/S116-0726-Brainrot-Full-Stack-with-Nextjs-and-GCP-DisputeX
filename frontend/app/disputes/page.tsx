@@ -36,8 +36,8 @@ const StatusBadge = ({ status }: { status: string }) => {
   }
   if (status === 'Lost') {
     return (
-      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-xs font-medium">
-        <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
+      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted border border-border text-muted-foreground text-xs font-medium">
+        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50"></div>
         Lost
       </div>
     );
@@ -107,12 +107,12 @@ export default function DisputesPage() {
 
   return (
     <AppShell>
-      <div className="w-full max-w-7xl mx-auto flex flex-col h-full bg-slate-50 font-sans p-2">
+      <div className="w-full max-w-7xl mx-auto flex flex-col h-full font-sans p-2">
         {/* Header Section */}
         <div className="mb-6">
-          <p className="text-xs font-semibold text-slate-500 tracking-wider mb-1 uppercase">Disputes</p>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">All disputes</h1>
-          <p className="text-sm text-slate-500 mt-1">{filteredDisputes.length} of {disputesData.length} shown</p>
+          <p className="text-xs font-semibold text-muted-foreground tracking-wider mb-1 uppercase">Disputes</p>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">All disputes</h1>
+          <p className="text-sm text-muted-foreground mt-1">{filteredDisputes.length} of {disputesData.length} shown</p>
         </div>
 
         {/* Toolbar Section */}
@@ -125,13 +125,13 @@ export default function DisputesPage() {
               placeholder="Search by ID, transaction, customer, bank..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-10 pl-10 pr-4 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 placeholder:text-slate-400"
+              className="w-full h-10 pl-10 pr-4 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-foreground placeholder:text-muted-foreground"
             />
           </div>
 
           {/* Filters */}
-          <div className="flex items-center bg-white border border-slate-200 rounded-lg p-1 overflow-x-auto w-full sm:w-auto text-sm">
-            <button className="p-2 text-slate-500 hover:text-slate-800 transition-colors border-r border-slate-200 pr-3">
+          <div className="flex items-center bg-card border border-border rounded-lg p-1 overflow-x-auto w-full sm:w-auto text-sm">
+            <button className="p-2 text-muted-foreground hover:text-foreground transition-colors border-r border-border pr-3">
               <SlidersHorizontal className="h-4 w-4" />
             </button>
             <div className="flex gap-1 pl-2">
@@ -141,8 +141,8 @@ export default function DisputesPage() {
                   onClick={() => setActiveFilter(filter)}
                   className={`px-3 py-1.5 rounded-md font-medium whitespace-nowrap transition-colors ${
                     activeFilter === filter
-                      ? "bg-slate-100 text-slate-800"
-                      : "text-slate-600 hover:bg-slate-50"
+                      ? "bg-muted text-foreground"
+                      : "text-muted-foreground hover:bg-muted/50"
                   }`}
                 >
                   {filter}
@@ -153,56 +153,56 @@ export default function DisputesPage() {
         </div>
 
         {/* Table Section */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1">
+        <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden flex-1">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 bg-white">
-                  <th className="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Dispute</th>
-                  <th className="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Transaction</th>
-                  <th className="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    <div onClick={() => handleSort('amount')} className="flex items-center gap-1 cursor-pointer hover:text-slate-700 select-none">
+                <tr className="border-b border-border bg-card">
+                  <th className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Dispute</th>
+                  <th className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Transaction</th>
+                  <th className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    <div onClick={() => handleSort('amount')} className="flex items-center gap-1 cursor-pointer hover:text-foreground select-none">
                       Amount <span className="text-[10px]">{sortConfig?.key === 'amount' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↑↓'}</span>
                     </div>
                   </th>
-                  <th className="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</th>
-                  <th className="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    <div onClick={() => handleSort('created')} className="flex items-center gap-1 cursor-pointer hover:text-slate-700 select-none">
+                  <th className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Customer</th>
+                  <th className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    <div onClick={() => handleSort('created')} className="flex items-center gap-1 cursor-pointer hover:text-foreground select-none">
                       Created <span className="text-[10px]">{sortConfig?.key === 'created' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↑↓'}</span>
                     </div>
                   </th>
-                  <th className="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    <div onClick={() => handleSort('deadline')} className="flex items-center gap-1 cursor-pointer hover:text-slate-700 select-none">
+                  <th className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    <div onClick={() => handleSort('deadline')} className="flex items-center gap-1 cursor-pointer hover:text-foreground select-none">
                       Deadline <span className="text-[10px]">{sortConfig?.key === 'deadline' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↑↓'}</span>
                     </div>
                   </th>
-                  <th className="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Remaining</th>
-                  <th className="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                  <th className="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider"></th>
+                  <th className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Remaining</th>
+                  <th className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                  <th className="py-4 px-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-border">
                 {sortedDisputes.map((dispute, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50 transition-colors group">
+                  <tr key={idx} className="hover:bg-muted/40 transition-colors group">
                     <td className="py-4 px-6 whitespace-nowrap">
-                      <div className="font-semibold text-sm text-slate-900">{dispute.id}</div>
-                      <div className="text-xs text-slate-500 mt-0.5">{dispute.bank}</div>
+                      <div className="font-semibold text-sm text-foreground">{dispute.id}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">{dispute.bank}</div>
                     </td>
                     <td className="py-4 px-6 whitespace-nowrap">
-                      <div className="text-sm text-slate-600 font-mono">{dispute.transactionId}</div>
+                      <div className="text-sm text-muted-foreground font-mono">{dispute.transactionId}</div>
                     </td>
                     <td className="py-4 px-6 whitespace-nowrap">
-                      <div className="text-sm font-semibold text-slate-900">₹{dispute.amount}</div>
+                      <div className="text-sm font-semibold text-foreground">₹{dispute.amount}</div>
                     </td>
                     <td className="py-4 px-6 whitespace-nowrap">
-                      <div className="text-sm font-medium text-slate-900">{dispute.customerName}</div>
-                      <div className="text-xs text-slate-500 mt-0.5">{dispute.customerEmail}</div>
+                      <div className="text-sm font-medium text-foreground">{dispute.customerName}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">{dispute.customerEmail}</div>
                     </td>
                     <td className="py-4 px-6 whitespace-nowrap">
-                      <div className="text-sm text-slate-600">{dispute.created}</div>
+                      <div className="text-sm text-muted-foreground">{dispute.created}</div>
                     </td>
                     <td className="py-4 px-6 whitespace-nowrap">
-                      <div className="text-sm text-slate-600">{dispute.deadline}</div>
+                      <div className="text-sm text-muted-foreground">{dispute.deadline}</div>
                     </td>
                     <td className="py-4 px-6 whitespace-nowrap">
                       <div className="inline-flex items-center gap-1.5 text-red-500 text-sm font-medium">
@@ -216,7 +216,7 @@ export default function DisputesPage() {
                     <td className="py-4 px-6 whitespace-nowrap text-right">
                       <button
                         onClick={() => router.push(`/disputes/${dispute.id}`)}
-                        className="px-4 py-1.5 bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors rounded-lg font-medium text-sm"
+                        className="px-4 py-1.5 bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900 transition-colors rounded-lg font-medium text-sm"
                       >
                         {dispute.state}
                       </button>
