@@ -11,17 +11,17 @@ export default function AdminSettingsPage() {
         <AdminAppShell>
             <div className="max-w-7xl mx-auto py-8">
                 <div className="mb-8">
-                    <div className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                         <span className="text-red-500">ADMIN</span>
                     </div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-1">Settings</h1>
-                    <p className="text-gray-500">Manage your administrator profile</p>
+                    <h1 className="text-3xl font-bold text-foreground mb-1">Settings</h1>
+                    <p className="text-muted-foreground">Manage your administrator profile</p>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 max-w-2xl">
+                <div className="bg-card rounded-xl shadow-sm border border-border p-8 max-w-2xl">
                     <form className="space-y-6">
                         <div>
-                            <label htmlFor="fullName" className="block text-sm font-medium text-gray-900 mb-2">
+                            <label htmlFor="fullName" className="block text-sm font-medium text-foreground mb-2">
                                 Full name
                             </label>
                             <input
@@ -29,12 +29,12 @@ export default function AdminSettingsPage() {
                                 id="fullName"
                                 value={fullName}
                                 onChange={(e) => setFullName(e.target.value)}
-                                className="block w-full px-4 py-3 border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                                className="block w-full px-4 py-3 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-900 mb-2">
+                            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
                                 Email
                             </label>
                             <input
@@ -42,12 +42,12 @@ export default function AdminSettingsPage() {
                                 id="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="block w-full px-4 py-3 border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                                className="block w-full px-4 py-3 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-900 mb-2">
+                            <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
                                 New password
                             </label>
                             <input
@@ -56,7 +56,7 @@ export default function AdminSettingsPage() {
                                 placeholder="Leave blank to keep current"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="block w-full px-4 py-3 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                                className="block w-full px-4 py-3 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
                             />
                         </div>
 

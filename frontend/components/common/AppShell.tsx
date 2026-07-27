@@ -2,27 +2,28 @@
 
 import Navbar from "../layout/Navbar";
 import Sidebar from "../layout/Sidebar";
+import { useState } from "react";
 
 interface AppShellProps {
     children: React.ReactNode;
 }
 
-export default function AppShell({
-    children,
-}: AppShellProps) {
+export default function AppShell({ children }: AppShellProps) {
+    const [sidebarOpen, setSidebarOpen] = useState(true);
+
     return (
-        <div className="flex min-h-screen bg-slate-100">
+        <div className="flex min-h-screen bg-background transition-colors">
 
-            <Sidebar />
+            {/* Sidebar - slides in/out via width transition */}
+            <div className={`transition-all duration-300 ease-in-out shrink-0 overflow-hidden ${sidebarOpen ? "w-64" : "w-0"}`}>
+                <Sidebar />
+            </div>
 
-            <div className="flex flex-1 flex-col">
-
-                <Navbar />
-
-                <main className="flex-1 p-6">
+            <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
+                <Navbar onToggleSidebar={() => setSidebarOpen((prev) => !prev)} sidebarOpen={sidebarOpen} />
+                <main className="flex-1 p-6 bg-background overflow-x-auto">
                     {children}
                 </main>
-
             </div>
 
         </div>

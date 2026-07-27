@@ -16,7 +16,7 @@ export default function AdminSidebar() {
     ];
 
     return (
-        <aside className="w-[260px] bg-[#0B1021] text-slate-300 flex flex-col h-screen overflow-y-auto font-sans shadow-[4px_0_24px_rgba(0,0,0,0.2)] z-20 sticky top-0 border-r border-slate-800/50">
+        <aside className="w-[260px] min-w-[260px] shrink-0 bg-[#0B1021] text-slate-300 flex flex-col h-screen overflow-y-auto font-sans shadow-[4px_0_24px_rgba(0,0,0,0.2)] z-20 sticky top-0 border-r border-slate-800/50">
             {/* Logo area */}
             <div className="p-6 flex items-center gap-3">
                 <div className="bg-[#E12B2B] rounded-xl p-2 flex items-center justify-center shadow-[0_0_15px_rgba(225,43,43,0.25)]">

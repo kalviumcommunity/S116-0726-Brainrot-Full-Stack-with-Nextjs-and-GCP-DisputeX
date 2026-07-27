@@ -125,56 +125,32 @@ export default function AdminMerchantsPage() {
           <div className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">
             <span className="text-red-500">ADMIN</span>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">Merchants</h1>
-          <p className="text-gray-500">23 merchants onboarded</p>
+          <h1 className="text-3xl font-bold text-foreground mb-1">Merchants</h1>
+          <p className="text-muted-foreground">23 merchants onboarded</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-card rounded-lg shadow-sm border border-border">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-muted">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    MERCHANT
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    MERCHANT ID
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    EMAIL
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    BUSINESS
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    DISPUTES
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    JOINED
-                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">MERCHANT</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">MERCHANT ID</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">EMAIL</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">BUSINESS</th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">DISPUTES</th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">JOINED</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-card divide-y divide-border">
                 {DUMMY_MERCHANTS.map((merchant, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {merchant.merchant}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {merchant.merchantId}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {merchant.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                      {merchant.business}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
-                      {merchant.disputes}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
-                      {merchant.joined}
-                    </td>
+                  <tr key={index} className="hover:bg-muted/40 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">{merchant.merchant}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{merchant.merchantId}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{merchant.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground font-medium">{merchant.business}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-right font-medium">{merchant.disputes}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground text-right">{merchant.joined}</td>
                   </tr>
                 ))}
               </tbody>

@@ -1,29 +1,81 @@
 "use client";
 
-import { Search, Moon, Bell } from "lucide-react";
+import { Search, Moon, Sun, Bell, PanelLeft } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-export default function AdminNavbar() {
+interface AdminNavbarProps {
+    onToggleSidebar: () => void;
+    sidebarOpen: boolean;
+}
+
+export default function AdminNavbar({ onToggleSidebar, sidebarOpen }: AdminNavbarProps) {
+    const { theme, setTheme, systemTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+    const router = useRouter();
+
+    useEffect(() => {
+        // eslint-disable-next-line
+        setMounted(true);
+    }, []);
+
+    const currentTheme = theme === "system" ? systemTheme : theme;
+    const isDarkMode = currentTheme === "dark";
+
+    const toggleTheme = () => {
+        setTheme(isDarkMode ? "light" : "dark");
+    };
+
+    if (!mounted) {
+        return (
+            <header className="h-16 bg-background border-b border-border flex items-center justify-between px-8 z-10 sticky top-0 transition-colors" />
+        );
+    }
+
     return (
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 z-10 sticky top-0">
-            <div className="flex-1 max-w-2xl relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <input
-                    type="text"
-                    placeholder="Search disputes, merchants, transactions..."
-                    className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                />
+        <header className="h-16 bg-background border-b border-border flex items-center justify-between px-8 z-10 sticky top-0 transition-colors">
+            <div className="flex items-center gap-3 flex-1 max-w-2xl">
+                {/* Sidebar toggle button */}
+                <button
+                    onClick={onToggleSidebar}
+                    title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+                    className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+                >
+                    <PanelLeft className={`h-5 w-5 transition-transform duration-300 ${sidebarOpen ? "" : "rotate-180"}`} />
+                </button>
+
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                        type="text"
+                        placeholder="Search disputes, merchants, transactions..."
+                        className="w-full pl-10 pr-4 py-2 bg-muted border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                    />
+                </div>
             </div>
+
             <div className="flex items-center gap-6">
-                <span className="px-3 py-1 bg-red-50 text-red-600 border border-red-200 rounded-full text-xs font-bold tracking-wider uppercase">
+                <span className="px-3 py-1 bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 rounded-full text-xs font-bold tracking-wider uppercase">
                     Admin Mode
                 </span>
-                <div className="flex items-center gap-4 border-l border-slate-200 pl-6">
-                    <button className="text-slate-500 hover:text-slate-700 transition-colors">
-                        <Moon className="h-5 w-5" />
+                <div className="flex items-center gap-2 border-l border-border pl-6">
+                    {/* Theme toggle */}
+                    <button
+                        onClick={toggleTheme}
+                        title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+                        className="text-muted-foreground hover:text-foreground transition-colors p-2 rounded-full hover:bg-muted"
+                    >
+                        {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                     </button>
-                    <button className="text-slate-500 hover:text-slate-700 transition-colors relative">
+                    {/* Notifications */}
+                    <button
+                        onClick={() => router.push("/admin/notifications")}
+                        className="text-muted-foreground hover:text-foreground transition-colors relative p-2 rounded-full hover:bg-muted"
+                        title="Notifications"
+                    >
                         <Bell className="h-5 w-5" />
-                        <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-background"></span>
                     </button>
                 </div>
             </div>
