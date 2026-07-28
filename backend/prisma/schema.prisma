@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Merchant {
+  id           String    @id @default(uuid())
+  name         String
+  businessId   String    @unique
+  contactEmail String
+  disputes     Dispute[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Dispute {
+  id          String        @id @default(uuid())
+  merchantId  String
+  merchant    Merchant      @relation(fields: [merchantId], references: [id])
+  amount      Float
+  currency    String        @default("USD")
+  reason      String
+  status      DisputeStatus @default(OPEN)
+  evidenceUrl String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+enum Role {
+  ADMIN
+  MERCHANT
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  WON
+  LOST
+}
