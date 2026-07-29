@@ -2,6 +2,9 @@ import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 
+import authRoutes from './routes/auth.routes';
+import merchantRoutes from './routes/merchant.routes';
+
 const app: Express = express();
 
 // Middleware
@@ -9,6 +12,10 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/merchants', merchantRoutes);
 
 // Health Check Route
 app.get('/health', (req: Request, res: Response) => {
