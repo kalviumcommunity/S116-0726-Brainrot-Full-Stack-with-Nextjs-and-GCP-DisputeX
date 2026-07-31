@@ -24,6 +24,8 @@ export default function SettingsPage() {
         escalation: true,
     });
 
+    if (!mounted) return null;
+
     const toggleNotification = (key: keyof typeof notifications) => {
         setNotifications(prev => {
             const newState = { ...prev, [key]: !prev[key] };

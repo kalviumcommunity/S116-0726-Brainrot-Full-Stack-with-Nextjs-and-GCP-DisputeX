@@ -4,6 +4,8 @@ import helmet from 'helmet';
 
 import authRoutes from './routes/auth.routes';
 import merchantRoutes from './routes/merchant.routes';
+import disputeRoutes from './routes/dispute.routes';
+import notificationRoutes from './routes/notification.routes';
 
 const app: Express = express();
 
@@ -16,6 +18,12 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/merchants', merchantRoutes);
+app.use('/api/disputes', disputeRoutes);
+app.use('/api/notifications', notificationRoutes);
+
+// Initialize Background Jobs
+import { initScheduler } from './jobs/scheduler';
+initScheduler();
 
 // Health Check Route
 app.get('/health', (req: Request, res: Response) => {
