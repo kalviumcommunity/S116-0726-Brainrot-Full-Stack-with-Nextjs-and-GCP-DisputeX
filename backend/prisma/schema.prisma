@@ -21,6 +21,7 @@ model Merchant {
   businessId   String    @unique
   contactEmail String
   disputes     Dispute[]
+  notifications Notification[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 }
@@ -36,6 +37,27 @@ model Dispute {
   evidenceUrl String?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+  activities  Activity[]
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  merchantId  String
+  merchant    Merchant @relation(fields: [merchantId], references: [id])
+  type        String
+  title       String
+  description String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Activity {
+  id          String   @id @default(uuid())
+  disputeId   String
+  dispute     Dispute  @relation(fields: [disputeId], references: [id])
+  action      String
+  description String
+  createdAt   DateTime @default(now())
 }
 
 enum Role {
@@ -48,4 +70,5 @@ enum DisputeStatus {
   UNDER_REVIEW
   WON
   LOST
+  ESCALATED
 }
