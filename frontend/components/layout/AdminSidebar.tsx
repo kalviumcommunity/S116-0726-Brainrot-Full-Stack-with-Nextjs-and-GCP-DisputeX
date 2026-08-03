@@ -23,7 +23,7 @@ export default function AdminSidebar() {
                     <ShieldAlert className="text-white h-5 w-5" />
                 </div>
                 <div>
-                    <h1 className="text-white font-bold text-base leading-tight tracking-tight">Razorpay Admin</h1>
+                    <h1 className="text-white font-bold text-base leading-tight tracking-tight">Dispute-X Admin</h1>
                     <p className="text-[10px] text-slate-400 font-bold tracking-[0.15em] mt-0.5 uppercase">Control Center</p>
                 </div>
             </div>
