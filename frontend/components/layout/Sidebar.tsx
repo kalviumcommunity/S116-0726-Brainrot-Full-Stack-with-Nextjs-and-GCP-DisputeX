@@ -23,7 +23,7 @@ export default function Sidebar() {
                     <ShieldAlert className="text-white h-5 w-5" />
                 </div>
                 <div>
-                    <h1 className="text-white font-bold text-lg leading-tight">Razorpay</h1>
+                    <h1 className="text-white font-bold text-lg leading-tight">Dispute-X</h1>
                     <p className="text-[10px] text-slate-400 font-semibold tracking-wider">DISPUTE PORTAL</p>
                 </div>
             </div>

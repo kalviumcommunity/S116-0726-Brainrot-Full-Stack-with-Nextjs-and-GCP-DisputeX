@@ -45,7 +45,7 @@ export default function AdminLoginPage() {
                             </div>
                             <div>
                                 <h3 className="text-xs font-bold text-[#E12B2B] tracking-wider uppercase mb-0.5">Admin Access</h3>
-                                <h2 className="text-xl font-bold text-slate-900 leading-none">Razorpay Dispute Portal</h2>
+                                <h2 className="text-xl font-bold text-slate-900 leading-none">Dispute-X Dispute Portal</h2>
                             </div>
                         </div>
 
@@ -64,7 +64,7 @@ export default function AdminLoginPage() {
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="admin@razorpay.com"
+                                        placeholder="admin@disputex.com"
                                         required
                                         className="w-full h-11 pl-10 bg-white border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 shadow-sm"
                                     />

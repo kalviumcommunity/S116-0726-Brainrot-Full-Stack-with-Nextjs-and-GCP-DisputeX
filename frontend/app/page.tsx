@@ -7,21 +7,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, Store } from "lucide-react";
-import Link from "next/link";
+import { Loader2, Store, ShieldCheck } from "lucide-react";
+import TextType from "@/components/TextType";
+import Prism from "@/components/Prism";
 
-// Mode defines whether the user is signing in or signing up
 type Mode = "signin" | "signup";
+type Role = "merchant" | "admin";
 
 const Logo = () => (
   <div className="flex justify-center mb-6">
     <img 
       src="/logo.jpeg" 
-      alt="Dispute Portal Logo" 
+      alt="Dispute-X Logo" 
       className="h-20 w-20 object-contain drop-shadow-sm rounded-full bg-white p-1"
       onError={(e) => {
         e.currentTarget.style.display = 'none';
-        e.currentTarget.parentElement!.innerHTML = '<div class="h-16 w-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-xl shadow-sm border border-blue-200">DP</div>';
+        e.currentTarget.parentElement!.innerHTML = '<div class="h-16 w-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-xl shadow-sm border border-blue-200">DX</div>';
       }}
     />
   </div>
@@ -30,15 +31,14 @@ const Logo = () => (
 export default function AuthPage() {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("signin");
+  const [role, setRole] = useState<Role>("merchant");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    // Check if the user is already logged in
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) router.replace("/dashboard"); // Redirecting to a dashboard instead of "/" since this is likely the root
+      if (data.session) router.replace("/dashboard");
     });
   }, [router]);
 
@@ -46,27 +46,14 @@ export default function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      // Temporarily bypassing Supabase auth so you can test the dashboard without .env keys
-      /*
-      if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        toast.success(`Logged in as ${role}`);
-        router.replace("/dashboard");
+      // Temporarily bypassing auth
+      toast.success(mode === "signin" ? `Logged in as ${role === 'admin' ? 'Admin' : 'Merchant'} (Bypassed)` : "Account created! (Bypassed)");
+      
+      if (role === 'admin') {
+        router.replace("/admin/dashboard");
       } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { role } },
-        });
-        if (error) throw error;
-        toast.success("Account created! Check your email.");
         router.replace("/dashboard");
       }
-      */
-      
-      toast.success(mode === "signin" ? `Logged in as Merchant (Bypassed)` : "Account created! (Bypassed)");
-      router.replace("/dashboard");
       
     } catch (error) {
       const err = error as Error;
@@ -85,11 +72,37 @@ export default function AuthPage() {
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/20 rounded-full blur-[120px]" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-600/20 rounded-full blur-[120px]" />
         
-        <div className="relative z-10 flex flex-col h-full justify-center">
+        {/* 3D Prism Background */}
+        <div className="absolute inset-0 z-0 opacity-60">
+          <Prism
+            animationType="rotate"
+            timeScale={0.5}
+            height={3.5}
+            baseWidth={5.5}
+            scale={3.6}
+            hueShift={0}
+            colorFrequency={1}
+            noise={0.5}
+            glow={1}
+          />
+        </div>
+
+        <div className="relative z-10 flex flex-col h-full justify-center pointer-events-none">
           <div className="max-w-md">
-            <h1 className="text-4xl font-bold leading-tight mb-4 text-white">
+            <h1 className="text-4xl font-bold leading-tight mb-4 text-white h-[80px]">
               Resolve chargebacks <br/>
-              <span className="text-blue-500">before the clock runs out.</span>
+              <TextType
+                text={[
+                  "before the clock runs out.",
+                  "with undeniable evidence.",
+                  "faster than ever."
+                ]}
+                typingSpeed={75}
+                pauseDuration={2500}
+                showCursor={true}
+                cursorCharacter="|"
+                className="text-blue-500"
+              />
             </h1>
             <p className="text-slate-400 text-lg leading-relaxed">
               A single workspace to track disputes, upload evidence, and keep an immutable trail.
@@ -100,21 +113,46 @@ export default function AuthPage() {
 
       {/* Right Panel - Login Area */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-slate-50 relative">
-        <div className="absolute top-8 right-8">
-            <Link href="/admin/login" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
-              Admin Login →
-            </Link>
-        </div>
         <div className="w-full max-w-md">
             <div className="bg-white p-8 sm:p-10 rounded-2xl shadow-sm border border-slate-200 transition-all">
               <Logo />
 
+              {/* Role Selection Tabs */}
+              <div className="flex p-1 mb-8 bg-slate-100 rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => setRole("merchant")}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-md transition-all ${
+                    role === "merchant" 
+                      ? "bg-white text-slate-900 shadow-sm" 
+                      : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
+                  }`}
+                >
+                  <Store className="w-4 h-4" />
+                  Merchant
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole("admin")}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-md transition-all ${
+                    role === "admin" 
+                      ? "bg-white text-slate-900 shadow-sm" 
+                      : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
+                  }`}
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  Admin
+                </button>
+              </div>
+
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
-                  {mode === "signin" ? `Merchant Login` : `Create Merchant Account`}
+                  {role === "admin" ? "Admin Login" : (mode === "signin" ? "Merchant Login" : "Create Merchant Account")}
                 </h2>
                 <p className="text-slate-500 text-sm mt-1">
-                  Enter your credentials to access the merchant portal.
+                  {role === "admin" 
+                    ? "Enter your credentials to access the admin portal." 
+                    : "Enter your credentials to access the merchant portal."}
                 </p>
               </div>
 
@@ -126,7 +164,7 @@ export default function AuthPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@example.com"
+                    placeholder={role === "admin" ? "admin@disputex.com" : "name@example.com"}
                     required
                     className="w-full h-11 bg-white border-slate-200 focus:border-blue-500 focus:ring-blue-500/20"
                   />
@@ -147,31 +185,33 @@ export default function AuthPage() {
 
                 <Button 
                   type="submit" 
-                  className="w-full h-11 mt-6 bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-colors" 
+                  className={`w-full h-11 mt-6 text-white shadow-sm transition-colors ${role === 'admin' ? 'bg-[#E12B2B] hover:bg-red-600' : 'bg-blue-600 hover:bg-blue-700'}`} 
                   disabled={busy}
                 >
                   {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {mode === "signin" ? "Sign In" : "Create Account"}
+                  {role === "admin" ? "Sign In as Admin" : (mode === "signin" ? "Sign In" : "Create Account")}
                 </Button>
               </form>
 
-              <div className="mt-8 text-center text-sm">
-                {mode === "signin" ? (
-                  <span className="text-slate-500">
-                    Don&apos;t have an account?{" "}
-                    <button type="button" onClick={() => setMode("signup")} className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors focus:outline-none">
-                      Sign up
-                    </button>
-                  </span>
-                ) : (
-                  <span className="text-slate-500">
-                    Already have an account?{" "}
-                    <button type="button" onClick={() => setMode("signin")} className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors focus:outline-none">
-                      Sign in
-                    </button>
-                  </span>
-                )}
-              </div>
+              {role === "merchant" && (
+                <div className="mt-8 text-center text-sm">
+                  {mode === "signin" ? (
+                    <span className="text-slate-500">
+                      Don&apos;t have an account?{" "}
+                      <button type="button" onClick={() => setMode("signup")} className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors focus:outline-none">
+                        Sign up
+                      </button>
+                    </span>
+                  ) : (
+                    <span className="text-slate-500">
+                      Already have an account?{" "}
+                      <button type="button" onClick={() => setMode("signin")} className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors focus:outline-none">
+                        Sign in
+                      </button>
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
         </div>
       </div>
