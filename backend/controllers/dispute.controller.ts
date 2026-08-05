@@ -1,115 +1,96 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { disputeService } from '../services/dispute.service';
-import { storageService } from '../storage/storage.service';
-import { DisputeStatus } from '@prisma/client';
 import { activityService } from '../services/activity.service';
+import { evidenceService } from '../services/evidence.service';
+import { disputeRepository } from '../repositories/dispute.repository';
+import { AppDisputeStatus } from '../types/app.types';
+import { sendSuccess, sendPaginated } from '../utils/response';
+import { parsePagination } from '../interfaces/request.interface';
+import { AppError } from '../interfaces/error.interface';
+
+const VALID_STATUSES: AppDisputeStatus[] = ['OPEN', 'UNDER_REVIEW', 'WON', 'LOST', 'ESCALATED'];
 
 export const disputeController = {
-  async createDispute(req: Request, res: Response) {
+  async createDispute(req: Request, res: Response, next: NextFunction) {
     try {
       const { merchantId, amount, currency, reason } = req.body;
-      if (!merchantId || !amount || !reason) {
-        return res.status(400).json({ error: 'merchantId, amount, and reason are required' });
-      }
-
       const dispute = await disputeService.createDispute({
         merchantId,
         amount: parseFloat(amount),
         currency: currency || 'USD',
-        reason
+        reason,
       });
-
-      res.status(201).json({ message: 'Dispute created successfully', dispute });
-    } catch (error: any) {
-      console.error('Error creating dispute:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      return sendSuccess(res, 201, { message: 'Dispute created successfully.', data: { dispute } });
+    } catch (error) {
+      return next(error);
     }
   },
 
-  async getDisputes(req: Request, res: Response) {
+  async getDisputes(req: Request, res: Response, next: NextFunction) {
     try {
-      const { merchantId, status } = req.query;
+      const merchantId = Array.isArray(req.query.merchantId) ? req.query.merchantId[0] : req.query.merchantId;
+      const status = Array.isArray(req.query.status) ? req.query.status[0] : req.query.status;
+      const { page, limit, skip } = parsePagination(req.query);
+
       const filters: any = {};
-      
       if (merchantId) filters.merchantId = merchantId as string;
-      if (status) filters.status = status as DisputeStatus;
-
-      const disputes = await disputeService.getAllDisputes(filters);
-      res.json({ disputes });
-    } catch (error: any) {
-      console.error('Error fetching disputes:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  },
-
-  async getDisputeById(req: Request, res: Response) {
-    try {
-      const id = req.params.id as string;
-      const dispute = await disputeService.getDisputeById(id);
-
-      if (!dispute) {
-        return res.status(404).json({ error: 'Dispute not found' });
+      if (status && VALID_STATUSES.includes(status as AppDisputeStatus)) {
+        filters.status = status as AppDisputeStatus;
       }
 
-      res.json({ dispute });
-    } catch (error: any) {
-      console.error('Error fetching dispute:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      const [disputes, total] = await Promise.all([
+        disputeRepository.findMany(filters, { skip, take: limit }),
+        disputeRepository.count(filters),
+      ]);
+
+      return sendPaginated(res, disputes, page, limit, total);
+    } catch (error) {
+      return next(error);
     }
   },
 
-  async updateDisputeStatus(req: Request, res: Response) {
+  async getDisputeById(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;
+      const dispute = await disputeRepository.findById(id);
+      if (!dispute) throw new AppError('Dispute not found.', 404, 'DISPUTE_NOT_FOUND');
+      return sendSuccess(res, 200, { data: { dispute } });
+    } catch (error) {
+      return next(error);
+    }
+  },
+
+  async updateDisputeStatus(req: Request, res: Response, next: NextFunction) {
+    try {
       const { status } = req.body;
-
-      if (!Object.values(DisputeStatus).includes(status as DisputeStatus)) {
-         return res.status(400).json({ error: 'Invalid status value' });
+      if (!VALID_STATUSES.includes(status as AppDisputeStatus)) {
+        throw new AppError('Invalid status value.', 400, 'INVALID_STATUS');
       }
-
-      const dispute = await disputeService.updateDisputeStatus(id, status as DisputeStatus);
-      res.json({ message: 'Dispute status updated', dispute });
-    } catch (error: any) {
-      console.error('Error updating dispute status:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      const dispute = await disputeService.updateDisputeStatus(req.params['id'] as string, status as AppDisputeStatus);
+      return sendSuccess(res, 200, { message: 'Dispute status updated.', data: { dispute } });
+    } catch (error) {
+      return next(error);
     }
   },
 
-  async uploadEvidence(req: Request, res: Response) {
+  async uploadEvidence(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = req.params.id as string;
-      const file = req.file;
-
-      if (!file) {
-        return res.status(400).json({ error: 'Evidence file is required' });
+      if (!req.file) {
+        throw new AppError('No file uploaded.', 400, 'NO_FILE');
       }
-
-      const dispute = await disputeService.getDisputeById(id);
-      if (!dispute) {
-        return res.status(404).json({ error: 'Dispute not found' });
-      }
-
-      const fileName = `disputes/${id}/evidence_${Date.now()}_${file.originalname.replace(/\\s+/g, '_')}`;
-      
-      const evidenceUrl = await storageService.uploadFile(file.buffer, fileName, file.mimetype);
-
-      const updatedDispute = await disputeService.updateDisputeEvidence(id, evidenceUrl);
-
-      res.json({ message: 'Evidence uploaded successfully', dispute: updatedDispute });
-    } catch (error: any) {
-      console.error('Error uploading evidence:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      const url = await evidenceService.uploadEvidence(req.params['id'] as string, req.file);
+      return sendSuccess(res, 200, { message: 'Evidence uploaded successfully.', data: { evidenceUrl: url } });
+    } catch (error) {
+      return next(error);
     }
   },
 
-  async getDisputeActivities(req: Request, res: Response) {
+  async getDisputeActivities(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = req.params.id as string;
-      const activities = await activityService.getActivitiesByDispute(id);
-      res.json({ activities });
-    } catch (error: any) {
-      console.error('Error fetching activities:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      const activities = await activityService.getActivitiesByDispute(req.params['id'] as string);
+      return sendSuccess(res, 200, { data: { activities } });
+    } catch (error) {
+      return next(error);
     }
-  }
+  },
 };

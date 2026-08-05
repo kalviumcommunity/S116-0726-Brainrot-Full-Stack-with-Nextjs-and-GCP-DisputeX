@@ -1,46 +1,58 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import prisma from '../utils/prisma';
+import { sendSuccess } from '../utils/response';
+import { AppError } from '../interfaces/error.interface';
+import { parsePagination } from '../interfaces/request.interface';
 
-export const createMerchant = async (req: Request, res: Response) => {
+export const createMerchant = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { name, businessId, contactEmail } = req.body;
 
-    const existingMerchant = await prisma.merchant.findUnique({ where: { businessId } });
-    if (existingMerchant) {
-      return res.status(400).json({ status: 'error', message: 'Merchant with this Business ID already exists' });
+    const existing = await prisma.merchant.findUnique({ where: { businessId } });
+    if (existing) {
+      throw new AppError('A merchant with this Business ID already exists.', 409, 'MERCHANT_EXISTS');
     }
 
-    const merchant = await prisma.merchant.create({
-      data: { name, businessId, contactEmail }
+    const merchant = await prisma.merchant.create({ data: { name, businessId, contactEmail } });
+    return sendSuccess(res, 201, { message: 'Merchant created successfully.', data: { merchant } });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getMerchants = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { page, limit, skip } = parsePagination(req.query);
+
+    const [merchants, total] = await Promise.all([
+      prisma.merchant.findMany({ skip, take: limit, orderBy: { createdAt: 'desc' } }),
+      prisma.merchant.count(),
+    ]);
+
+    return res.status(200).json({
+      status: 'success',
+      data: merchants,
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
-
-    return res.status(201).json({ status: 'success', data: { merchant } });
-  } catch (error: any) {
-    return res.status(500).json({ status: 'error', message: error.message });
+  } catch (error) {
+    return next(error);
   }
 };
 
-export const getMerchants = async (req: Request, res: Response) => {
+export const getMerchantById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const merchants = await prisma.merchant.findMany();
-    return res.status(200).json({ status: 'success', data: { merchants } });
-  } catch (error: any) {
-    return res.status(500).json({ status: 'error', message: error.message });
-  }
-};
-
-export const getMerchantById = async (req: Request, res: Response) => {
-  try {
-    const id = req.params.id as string;
     const merchant = await prisma.merchant.findUnique({
-      where: { id },
-      include: { disputes: true }
+      where: { id: req.params.id },
+      include: {
+        disputes: { orderBy: { createdAt: 'desc' }, take: 10 },
+        _count: { select: { disputes: true, notifications: true } },
+      },
     });
-    
-    if (!merchant) return res.status(404).json({ status: 'error', message: 'Merchant not found' });
-    
-    return res.status(200).json({ status: 'success', data: { merchant } });
-  } catch (error: any) {
-    return res.status(500).json({ status: 'error', message: error.message });
+
+    if (!merchant) throw new AppError('Merchant not found.', 404, 'MERCHANT_NOT_FOUND');
+
+    return sendSuccess(res, 200, { data: { merchant } });
+  } catch (error) {
+    return next(error);
   }
 };

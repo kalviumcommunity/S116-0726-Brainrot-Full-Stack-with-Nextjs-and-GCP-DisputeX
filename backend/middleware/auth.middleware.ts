@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { Role } from '@prisma/client';
+import { AppRole } from '../types/app.types';
+import { envConfig } from '../config/env.config';
 
 export interface AuthRequest extends Request {
   user?: {
     userId: string;
-    role: Role;
+    role: AppRole;
   };
 }
 
@@ -17,8 +18,7 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
 
   const token = authHeader.split(' ')[1];
   try {
-    const secret = process.env.JWT_SECRET || 'supersecret';
-    const decoded = jwt.verify(token, secret) as { userId: string; role: Role };
+    const decoded = jwt.verify(token, envConfig.jwtSecret) as { userId: string; role: AppRole };
     req.user = decoded;
     next();
   } catch (error) {
@@ -26,7 +26,7 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
   }
 };
 
-export const requireRole = (roles: Role[]) => {
+export const requireRole = (roles: AppRole[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({ status: 'error', message: 'Forbidden' });
