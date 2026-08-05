@@ -1,29 +1,56 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { notificationService } from '../services/notification.service';
+import { notificationRepository } from '../repositories/notification.repository';
+import { sendSuccess } from '../utils/response';
+import { AppError } from '../interfaces/error.interface';
 
-export const getNotifications = async (req: Request, res: Response) => {
+export const getNotifications = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { merchantId } = req.query;
-    
-    if (!merchantId || typeof merchantId !== 'string') {
-      return res.status(400).json({ status: 'error', message: 'merchantId is required' });
+    const merchantId = Array.isArray(req.query.merchantId)
+      ? req.query.merchantId[0] as string
+      : req.query.merchantId as string | undefined;
+
+    if (!merchantId) {
+      throw new AppError('merchantId query parameter is required.', 400, 'MISSING_MERCHANT_ID');
     }
 
-    const notifications = await notificationService.getNotifications(merchantId as string);
-    return res.status(200).json({ status: 'success', notifications });
-  } catch (error: any) {
-    console.error('Error fetching notifications:', error);
-    return res.status(500).json({ status: 'error', message: error.message });
+    const isReadParam = req.query.isRead;
+    const isReadStr = Array.isArray(isReadParam) ? isReadParam[0] : isReadParam;
+    const isReadBool =
+      isReadStr === 'true' ? true : isReadStr === 'false' ? false : undefined;
+
+    const notifications = await notificationRepository.findByMerchant(merchantId, isReadBool);
+    const unreadCount = await notificationRepository.countUnread(merchantId);
+
+    return sendSuccess(res, 200, {
+      data: { notifications, unreadCount },
+    });
+  } catch (error) {
+    return next(error);
   }
 };
 
-export const markNotificationAsRead = async (req: Request, res: Response) => {
+export const markNotificationAsRead = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = req.params.id as string;
-    const notification = await notificationService.markAsRead(id);
-    return res.status(200).json({ status: 'success', notification });
-  } catch (error: any) {
-    console.error('Error marking notification as read:', error);
-    return res.status(500).json({ status: 'error', message: error.message });
+    const notification = await notificationRepository.markAsRead(req.params['id'] as string);
+    return sendSuccess(res, 200, {
+      message: 'Notification marked as read.',
+      data: { notification },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const markAllNotificationsAsRead = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { merchantId } = req.body;
+    if (!merchantId) {
+      throw new AppError('merchantId is required.', 400, 'MISSING_MERCHANT_ID');
+    }
+    await notificationRepository.markAllAsRead(merchantId);
+    return sendSuccess(res, 200, { message: 'All notifications marked as read.' });
+  } catch (error) {
+    return next(error);
   }
 };

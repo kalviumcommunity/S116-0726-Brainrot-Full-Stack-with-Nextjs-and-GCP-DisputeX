@@ -1,5 +1,5 @@
-import { PrismaClient, DisputeStatus } from '@prisma/client';
 import prisma from '../utils/prisma';
+import { AppDisputeStatus } from '../types/app.types';
 import { activityService } from './activity.service';
 
 export const disputeService = {
@@ -24,7 +24,7 @@ export const disputeService = {
     });
   },
 
-  async getAllDisputes(filters?: { merchantId?: string; status?: DisputeStatus }) {
+  async getAllDisputes(filters?: { merchantId?: string; status?: AppDisputeStatus }) {
     const where: any = {};
     if (filters?.merchantId) where.merchantId = filters.merchantId;
     if (filters?.status) where.status = filters.status;
@@ -36,10 +36,10 @@ export const disputeService = {
     });
   },
 
-  async updateDisputeStatus(id: string, status: DisputeStatus) {
+  async updateDisputeStatus(id: string, status: AppDisputeStatus) {
     const updated = await prisma.dispute.update({
       where: { id },
-      data: { status },
+      data: { status: status as any },
     });
     
     await activityService.createActivity(
