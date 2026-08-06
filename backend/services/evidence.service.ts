@@ -24,10 +24,13 @@ export const evidenceService = {
       throw new AppError(fileError, 400, 'INVALID_FILE');
     }
 
-    // 2. Verify dispute exists
+    // 2. Verify dispute exists and check for existing evidence
     const dispute = await disputeRepository.findById(disputeId);
     if (!dispute) {
       throw new AppError('Dispute not found.', 404, 'DISPUTE_NOT_FOUND');
+    }
+    if (dispute.evidenceUrl) {
+      throw new AppError('Evidence has already been uploaded for this dispute and cannot be altered.', 403, 'EVIDENCE_ALREADY_EXISTS');
     }
 
     // 3. Build a deterministic file path

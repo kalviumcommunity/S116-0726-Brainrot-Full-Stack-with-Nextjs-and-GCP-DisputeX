@@ -5,7 +5,7 @@ import { ArrowLeft, Loader2, FileText, CheckCircle2, Activity as ActivityIcon } 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { disputeService, Dispute, Activity } from "@/services/dispute.service";
+import { disputeService, Dispute, Activity as ActivityType } from "@/services/dispute.service";
 
 export default function AdminDisputeDetailPage() {
   const params = useParams();
@@ -13,7 +13,7 @@ export default function AdminDisputeDetailPage() {
   const id = params.id as string;
   
   const [dispute, setDispute] = useState<Dispute | null>(null);
-  const [activities, setActivities] = useState<Activity[]>([]);
+  const [activities, setActivities] = useState<ActivityType[]>([]);
   const [activeTab, setActiveTab] = useState<'evidence' | 'timeline'>('evidence');
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -25,8 +25,8 @@ export default function AdminDisputeDetailPage() {
           disputeService.getDisputeById(id),
           disputeService.getDisputeActivities(id)
         ]);
-        setDispute(disputeData.dispute);
-        setActivities(activitiesData.activities || []);
+        setDispute(disputeData.data.dispute);
+        setActivities(activitiesData.data.activities || []);
       } catch (error) {
         console.error("Failed to fetch dispute details:", error);
       } finally {
@@ -40,11 +40,11 @@ export default function AdminDisputeDetailPage() {
     setIsUpdatingStatus(true);
     try {
       const response = await disputeService.updateDisputeStatus(id, status);
-      if (response.dispute) {
-        setDispute(response.dispute);
+      if (response.data && response.data.dispute) {
+        setDispute(response.data.dispute);
         // Refresh activities
         const activitiesData = await disputeService.getDisputeActivities(id);
-        setActivities(activitiesData.activities || []);
+        setActivities(activitiesData.data.activities || []);
       }
     } catch (error) {
       console.error("Failed to update status", error);

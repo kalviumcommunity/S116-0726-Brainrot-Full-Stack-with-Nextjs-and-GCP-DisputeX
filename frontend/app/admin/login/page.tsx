@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { authService } from "@/services/auth.service";
 
 export default function AdminLoginPage() {
     const router = useRouter();
@@ -19,12 +20,17 @@ export default function AdminLoginPage() {
         e.preventDefault();
         setBusy(true);
         try {
-            // Temporarily bypassing auth
-            toast.success("Logged in as Admin (Bypassed)");
+            const response = await authService.login(email, password, 'ADMIN');
+            
+            // Save token and user info to localStorage
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('user', JSON.stringify(response.user));
+            
+            toast.success("Successfully logged in!");
             router.replace("/admin/dashboard");
-        } catch (error) {
-            const err = error as Error;
-            toast.error(err.message ?? "Something went wrong");
+        } catch (error: any) {
+            const errorMsg = error.response?.data?.message || "Invalid credentials. Please try again.";
+            toast.error(errorMsg);
         } finally {
             setBusy(false);
         }

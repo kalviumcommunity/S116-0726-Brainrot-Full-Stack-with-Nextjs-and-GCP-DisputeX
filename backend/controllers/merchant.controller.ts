@@ -42,7 +42,7 @@ export const getMerchants = async (req: Request, res: Response, next: NextFuncti
 export const getMerchantById = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const merchant = await prisma.merchant.findUnique({
-      where: { id: req.params.id },
+      where: { id: req.params.id as string },
       include: {
         disputes: { orderBy: { createdAt: 'desc' }, take: 10 },
         _count: { select: { disputes: true, notifications: true } },

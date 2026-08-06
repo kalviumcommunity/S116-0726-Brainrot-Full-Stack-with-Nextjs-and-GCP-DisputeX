@@ -5,14 +5,14 @@ import { ArrowLeft, Send, Upload, Loader2, FileText, CheckCircle2, Activity as A
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { disputeService, Dispute, Activity } from "@/services/dispute.service";
+import { disputeService, Dispute, Activity as ActivityType } from "@/services/dispute.service";
 
 export default function DisputeDetailPage() {
   const params = useParams();
   const id = params.id as string;
   
   const [dispute, setDispute] = useState<Dispute | null>(null);
-  const [activities, setActivities] = useState<Activity[]>([]);
+  const [activities, setActivities] = useState<ActivityType[]>([]);
   const [activeTab, setActiveTab] = useState<'evidence' | 'timeline'>('evidence');
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -26,8 +26,8 @@ export default function DisputeDetailPage() {
           disputeService.getDisputeById(id),
           disputeService.getDisputeActivities(id)
         ]);
-        setDispute(disputeData.dispute);
-        setActivities(activitiesData.activities || []);
+        setDispute(disputeData.data.dispute);
+        setActivities(activitiesData.data.activities || []);
       } catch (error) {
         console.error("Failed to fetch dispute details:", error);
       } finally {
@@ -52,11 +52,11 @@ export default function DisputeDetailPage() {
     
     try {
       const response = await disputeService.uploadEvidence(id, file);
-      if (response.dispute) {
-        setDispute(response.dispute);
+      if (response.data && response.data.evidenceUrl) {
+        setDispute(prev => prev ? { ...prev, evidenceUrl: response.data.evidenceUrl } : null);
         // Refresh activities
         const activitiesData = await disputeService.getDisputeActivities(id);
-        setActivities(activitiesData.activities || []);
+        setActivities(activitiesData.data.activities || []);
       }
     } catch (error: any) {
       console.error("Upload failed", error);

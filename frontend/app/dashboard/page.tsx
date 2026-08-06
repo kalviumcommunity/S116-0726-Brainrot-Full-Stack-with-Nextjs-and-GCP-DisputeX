@@ -1,34 +1,58 @@
 "use client";
 
-import { ShieldAlert, Clock, Mail, AlertTriangle, Trophy, XCircle, ArrowRight } from "lucide-react";
+import { ShieldAlert, Clock, Mail, AlertTriangle, Trophy, XCircle, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { disputeService, Dispute } from "@/services/dispute.service";
+import { authService } from "@/services/auth.service";
+import { format } from "date-fns";
 
-/**
- * DashboardPage Component
- * Renders the main dashboard view for the merchant, including summary statistics, 
- * upcoming deadlines, and recent activity feed.
- */
 export default function DashboardPage() {
     const router = useRouter();
-    // Array of key statistics metrics to display at the top of the dashboard
+    const [disputes, setDisputes] = useState<Dispute[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchDashboard = async () => {
+            try {
+                const currentUser = authService.getUser();
+                if (!currentUser) {
+                    router.replace("/");
+                    return;
+                }
+                setUser(currentUser);
+                
+                // Fetch merchant's disputes
+                const response = await disputeService.getDisputes();
+                setDisputes(response.data.disputes || []);
+            } catch (error) {
+                console.error("Failed to fetch dashboard data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchDashboard();
+    }, [router]);
+
+    // Compute stats
+    const total = disputes.length;
+    const pending = disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').length;
+    const won = disputes.filter(d => d.status === 'WON').length;
+    const lost = disputes.filter(d => d.status === 'LOST').length;
+    const escalated = disputes.filter(d => d.status === 'ESCALATED').length;
 
     const stats = [
-        { label: "TOTAL", value: "10", icon: ShieldAlert, color: "text-indigo-500", bg: "bg-indigo-50 dark:bg-indigo-950" },
-        { label: "PENDING", value: "6", icon: Clock, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-950" },
-        { label: "RESPONDED", value: "0", icon: Mail, color: "text-sky-500", bg: "bg-sky-50 dark:bg-sky-950" },
-        { label: "ESCALATED", value: "1", icon: AlertTriangle, color: "text-red-500", bg: "bg-red-50 dark:bg-red-950" },
-        { label: "WON", value: "1", icon: Trophy, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950" },
-        { label: "LOST", value: "2", icon: XCircle, color: "text-rose-500", bg: "bg-rose-50 dark:bg-rose-950" },
+        { label: "TOTAL", value: total.toString(), icon: ShieldAlert, color: "text-indigo-500", bg: "bg-indigo-50 dark:bg-indigo-950" },
+        { label: "PENDING", value: pending.toString(), icon: Clock, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-950" },
+        { label: "ESCALATED", value: escalated.toString(), icon: AlertTriangle, color: "text-red-500", bg: "bg-red-50 dark:bg-red-950" },
+        { label: "WON", value: won.toString(), icon: Trophy, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950" },
+        { label: "LOST", value: lost.toString(), icon: XCircle, color: "text-rose-500", bg: "bg-rose-50 dark:bg-rose-950" },
     ];
 
-    const upcomingDeadlines = [
-        { id: "DSP_7ED0C9987DA9", name: "Kabir Mehta", amount: "₹16,636.30", date: "created 03 Jul 2026", status: "Pending", expired: true },
-        { id: "DSP_FBF53EF96745", name: "Ananya Sharma", amount: "₹39,694.75", date: "created 04 Jul 2026", status: "Pending", expired: true },
-        { id: "DSP_FA715D3BC86C", name: "Arjun Rao", amount: "₹33,043.38", date: "created 04 Jul 2026", status: "Pending", expired: true },
-        { id: "DSP_9AF645D9AF94", name: "Aditya Patel", amount: "₹6,435.05", date: "created 05 Jul 2026", status: "Pending", expired: true },
-        { id: "DSP_D61CF71E829D", name: "Aditya Patel", amount: "₹15,818.15", date: "created 05 Jul 2026", status: "Pending", expired: true },
-    ];
+    // Get upcoming deadlines (just showing all pending ones for now)
+    const upcomingDeadlines = disputes.filter(d => d.status === 'OPEN' || d.status === 'UNDER_REVIEW').slice(0, 5);
 
     const recentActivity = [
         { title: "Dispute DSP_E2185643C3AC escalated", desc: "This dispute was escalated because no evidence was...", date: "08 JUL 2026" },
@@ -43,8 +67,8 @@ export default function DashboardPage() {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <p className="text-xs font-semibold text-muted-foreground tracking-wider mb-1">DASHBOARD</p>
-                    <h1 className="text-3xl font-bold text-foreground tracking-tight">Good afternoon, No</h1>
-                    <p className="text-muted-foreground mt-1">You have <span className="font-semibold text-foreground">6</span> disputes awaiting evidence.</p>
+                    <h1 className="text-3xl font-bold text-foreground tracking-tight">Good afternoon, {user ? user.email.split('@')[0] : 'Merchant'}</h1>
+                    <p className="text-muted-foreground mt-1">You have <span className="font-semibold text-foreground">{pending}</span> disputes awaiting evidence.</p>
                 </div>
                 <Button onClick={() => router.push('/disputes')} className="bg-blue-600 hover:bg-blue-700 text-white gap-2 rounded-lg px-5">
                     View all disputes
@@ -76,15 +100,18 @@ export default function DashboardPage() {
                         <button onClick={() => router.push('/disputes')} className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">All</button>
                     </div>
                     <div className="divide-y divide-border">
+                        {upcomingDeadlines.length === 0 && !loading && (
+                            <div className="p-8 text-center text-muted-foreground">No pending disputes found.</div>
+                        )}
                         {upcomingDeadlines.map((item, i) => (
-                            <div key={i} className="p-4 px-6 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                            <div key={item.id} className="p-4 px-6 flex items-center justify-between hover:bg-muted/50 transition-colors">
                                 <div className="flex items-center gap-4">
                                     <div className="bg-indigo-50 dark:bg-indigo-950 p-2.5 rounded-xl">
                                         <ShieldAlert className="h-5 w-5 text-indigo-500" />
                                     </div>
                                     <div>
-                                        <p className="font-medium text-foreground">{item.id} <span className="text-muted-foreground font-normal mx-1">•</span> {item.name}</p>
-                                        <p className="text-sm text-muted-foreground">{item.amount} <span className="mx-1">•</span> {item.date}</p>
+                                        <p className="font-medium text-foreground text-sm uppercase tracking-wider">{item.id.substring(0, 12)}</p>
+                                        <p className="text-sm text-muted-foreground">{new Intl.NumberFormat('en-US', { style: 'currency', currency: item.currency || 'USD' }).format(item.amount)} <span className="mx-1">•</span> {format(new Date(item.createdAt), 'dd MMM yyyy')}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -92,12 +119,6 @@ export default function DashboardPage() {
                                         <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                                         {item.status}
                                     </span>
-                                    {item.expired && (
-                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-red-600 dark:text-red-400 bg-card border border-red-200 dark:border-red-900">
-                                            <Clock className="h-3 w-3" />
-                                            Expired
-                                        </span>
-                                    )}
                                 </div>
                             </div>
                         ))}

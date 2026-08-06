@@ -28,6 +28,8 @@ const Logo = () => (
   </div>
 );
 
+import { authService } from "@/services/auth.service";
+
 export default function AuthPage() {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("signin");
@@ -37,27 +39,45 @@ export default function AuthPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) router.replace("/dashboard");
-    });
+    // Check if already authenticated via our own service
+    if (authService.isAuthenticated()) {
+      const user = authService.getUser();
+      if (user?.role === 'ADMIN') {
+        router.replace("/admin/dashboard");
+      } else {
+        router.replace("/dashboard");
+      }
+    }
   }, [router]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     try {
-      // Temporarily bypassing auth
-      toast.success(mode === "signin" ? `Logged in as ${role === 'admin' ? 'Admin' : 'Merchant'} (Bypassed)` : "Account created! (Bypassed)");
+      let userData;
+      if (mode === "signin") {
+        const response = await authService.login(email, password, role.toUpperCase());
+        userData = response.data.user;
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(userData));
+        toast.success(`Welcome back, ${role === 'admin' ? 'Admin' : 'Merchant'}!`);
+      } else {
+        // Merchant registration
+        const response = await authService.register(email, password, 'MERCHANT');
+        userData = response.data.user;
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(userData));
+        toast.success("Merchant account created successfully!");
+      }
       
-      if (role === 'admin') {
+      if (userData.role === 'ADMIN') {
         router.replace("/admin/dashboard");
       } else {
         router.replace("/dashboard");
       }
-      
-    } catch (error) {
-      const err = error as Error;
-      toast.error(err.message ?? "Something went wrong");
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.message || "Invalid credentials. Please try again.";
+      toast.error(errorMsg);
     } finally {
       setBusy(false);
     }
@@ -166,7 +186,7 @@ export default function AuthPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={role === "admin" ? "admin@disputex.com" : "name@example.com"}
                     required
-                    className="w-full h-11 bg-white border-slate-200 focus:border-blue-500 focus:ring-blue-500/20"
+                    className="w-full h-11 bg-white text-slate-900 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20"
                   />
                 </div>
 
@@ -179,7 +199,7 @@ export default function AuthPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     required
-                    className="w-full h-11 bg-white border-slate-200 focus:border-blue-500 focus:ring-blue-500/20"
+                    className="w-full h-11 bg-white text-slate-900 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20"
                   />
                 </div>
 
