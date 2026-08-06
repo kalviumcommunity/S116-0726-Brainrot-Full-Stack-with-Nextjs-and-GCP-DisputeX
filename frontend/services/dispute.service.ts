@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+import api from '../lib/api';
 
 export interface Dispute {
   id: string;
@@ -40,12 +38,12 @@ export interface Notification {
 
 export const disputeService = {
   createDispute: async (data: { merchantId: string; amount: number; reason: string; currency?: string }) => {
-    const response = await axios.post(`${API_URL}/disputes`, data);
+    const response = await api.post('/disputes', data);
     return response.data;
   },
 
   getDisputes: async (filters?: { merchantId?: string; status?: string }) => {
-    let url = `${API_URL}/disputes`;
+    let url = '/disputes';
     if (filters) {
       const params = new URLSearchParams();
       if (filters.merchantId) params.append('merchantId', filters.merchantId);
@@ -54,17 +52,17 @@ export const disputeService = {
         url += `?${params.toString()}`;
       }
     }
-    const response = await axios.get(url);
+    const response = await api.get(url);
     return response.data;
   },
 
   getDisputeById: async (id: string) => {
-    const response = await axios.get(`${API_URL}/disputes/${id}`);
+    const response = await api.get(`/disputes/${id}`);
     return response.data;
   },
 
   updateDisputeStatus: async (id: string, status: string) => {
-    const response = await axios.patch(`${API_URL}/disputes/${id}/status`, { status });
+    const response = await api.patch(`/disputes/${id}/status`, { status });
     return response.data;
   },
 
@@ -72,7 +70,7 @@ export const disputeService = {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await axios.post(`${API_URL}/disputes/${id}/evidence`, formData, {
+    const response = await api.post(`/disputes/${id}/evidence`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -81,17 +79,17 @@ export const disputeService = {
   },
 
   getDisputeActivities: async (id: string) => {
-    const response = await axios.get(`${API_URL}/disputes/${id}/activities`);
+    const response = await api.get(`/disputes/${id}/activities`);
     return response.data;
   },
 
   getNotifications: async (merchantId: string) => {
-    const response = await axios.get(`${API_URL}/notifications?merchantId=${merchantId}`);
+    const response = await api.get(`/notifications?merchantId=${merchantId}`);
     return response.data;
   },
 
   markNotificationAsRead: async (id: string) => {
-    const response = await axios.patch(`${API_URL}/notifications/${id}/read`);
+    const response = await api.patch(`/notifications/${id}/read`);
     return response.data;
   }
 };

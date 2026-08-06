@@ -1,42 +1,39 @@
-import { Storage } from '@google-cloud/storage';
+import { v2 as cloudinary } from 'cloudinary';
 
-const projectId = process.env.GCP_PROJECT_ID;
-const keyFilename = process.env.GCP_KEY_FILENAME; // if using local key file
-const credentials = process.env.GCP_CLIENT_EMAIL && process.env.GCP_PRIVATE_KEY ? {
-  client_email: process.env.GCP_CLIENT_EMAIL,
-  private_key: process.env.GCP_PRIVATE_KEY.replace(/\\n/g, '\n'),
-} : undefined;
-
-let storage: Storage | null = null;
-
-try {
-  if (projectId) {
-    storage = new Storage({ projectId, credentials, keyFilename });
-    console.log('GCP Storage initialized.');
-  } else {
-    console.warn('GCP_PROJECT_ID not set, GCP Storage is mocked.');
-  }
-} catch (error) {
-  console.error('Error initializing GCP Storage:', error);
-}
-
-const bucketName = process.env.GCP_BUCKET_NAME || 'disputex-evidence-bucket';
+// Configure Cloudinary with environment variables
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export const storageService = {
+  /**
+   * Uploads a file buffer directly to Cloudinary via a stream.
+   * Returns the secure HTTPS URL of the uploaded asset.
+   */
   async uploadFile(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
-    if (!storage) {
-      console.warn('Mock upload for file:', fileName);
-      return `https://mock-storage.com/${bucketName}/${fileName}`;
-    }
-
-    const bucket = storage.bucket(bucketName);
-    const file = bucket.file(fileName);
-    
-    await file.save(fileBuffer, {
-      contentType: mimeType,
-      resumable: false,
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'disputex/evidence',
+          public_id: fileName,
+          resource_type: 'auto', // Automatically detect image vs pdf
+        },
+        (error, result) => {
+          if (error) {
+            console.error('Cloudinary Upload Error:', error);
+            return reject(error);
+          }
+          if (!result) {
+            return reject(new Error('Cloudinary failed to return a result.'));
+          }
+          resolve(result.secure_url);
+        }
+      );
+      
+      // Write the buffer to the stream and end it
+      uploadStream.end(fileBuffer);
     });
-
-    return `https://storage.googleapis.com/${bucketName}/${fileName}`;
   }
 };

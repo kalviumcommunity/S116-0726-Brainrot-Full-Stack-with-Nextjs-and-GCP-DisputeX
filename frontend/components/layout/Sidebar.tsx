@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, ShieldAlert, Bell, User, Settings, LogOut } from "lucide-react";
 
 export default function Sidebar() {
     const pathname = usePathname();
+    const router = useRouter();
 
     const menuItems = [
         { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -48,15 +49,32 @@ export default function Sidebar() {
             </div>
 
             <div className="mt-auto p-4 mb-2">
-                <div className="bg-[#111827] rounded-xl p-3 flex items-center gap-3 border border-slate-800/50 hover:border-slate-700 transition-colors cursor-pointer group">
+                <div 
+                    onClick={() => router.push('/profile')}
+                    className="bg-[#111827] rounded-xl p-3 flex items-center gap-3 border border-slate-800/50 hover:border-slate-700 transition-colors cursor-pointer group"
+                >
                     <div className="bg-indigo-900 text-indigo-200 rounded-full h-8 w-8 flex items-center justify-center text-sm font-semibold">
-                        N
+                        {typeof window !== 'undefined' && JSON.parse(localStorage.getItem('user') || '{}').email?.charAt(0).toUpperCase() || 'M'}
                     </div>
                     <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-200 truncate">No One</p>
-                        <p className="text-[10px] text-slate-500 truncate">MID_6F5B22BC16</p>
+                        <p className="text-sm font-medium text-slate-200 truncate">
+                            {typeof window !== 'undefined' && JSON.parse(localStorage.getItem('user') || '{}').email?.split('@')[0] || 'Merchant'}
+                        </p>
+                        <p className="text-[10px] text-slate-500 truncate">MERCHANT_ACCOUNT</p>
                     </div>
-                    <LogOut className="h-4 w-4 text-slate-500 group-hover:text-slate-300 transition-colors" />
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            import('@/services/auth.service').then(({ authService }) => {
+                                authService.logout();
+                                window.location.href = '/';
+                            });
+                        }}
+                        className="p-1.5 -mr-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+                        title="Sign out"
+                    >
+                        <LogOut className="h-4 w-4 text-slate-500 hover:text-slate-300 transition-colors" />
+                    </button>
                 </div>
             </div>
         </aside>

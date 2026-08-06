@@ -4,6 +4,7 @@ import { Search, ChevronDown, Eye, Clock, Check, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { disputeService, Dispute } from "@/services/dispute.service";
+import { adminService } from "@/services/admin.service";
 
 export default function AdminDisputesPage() {
   const router = useRouter();
@@ -11,19 +12,16 @@ export default function AdminDisputesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("All statuses");
-  const [isPriorityDropdownOpen, setIsPriorityDropdownOpen] = useState(false);
-  const [selectedPriority, setSelectedPriority] = useState("All priorities");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
 
   const statuses = ["All statuses", "OPEN", "UNDER_REVIEW", "WON", "LOST"];
-  const priorities = ["All priorities", "Low", "Normal", "High", "Urgent"];
 
   useEffect(() => {
     const fetchDisputes = async () => {
       try {
-        const response = await disputeService.getDisputes();
-        setDisputes(response.disputes || []);
+        const response = await adminService.getAllDisputes(1, 100);
+        setDisputes(response.data || []);
       } catch (error) {
         console.error("Failed to fetch disputes:", error);
       } finally {
@@ -121,31 +119,6 @@ export default function AdminDisputesPage() {
                     {statuses.map((status) => (
                       <button key={status} className={`block px-4 py-2 text-sm text-left w-full transition-colors ${selectedStatus === status ? 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300' : 'text-foreground hover:bg-muted'}`} onClick={() => { setSelectedStatus(status); setIsStatusDropdownOpen(false); }}>
                         {status}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="relative">
-              <button
-                type="button"
-                className="inline-flex justify-between items-center w-[140px] px-4 py-2 border border-border shadow-sm text-sm font-medium rounded-md text-foreground bg-card hover:bg-muted transition-colors"
-                onClick={() => setIsPriorityDropdownOpen(!isPriorityDropdownOpen)}
-              >
-                {selectedPriority}
-                <ChevronDown className="ml-2 h-4 w-4 text-muted-foreground" />
-              </button>
-              {isPriorityDropdownOpen && (
-                <div className="origin-top-right absolute right-0 mt-2 w-[140px] rounded-md shadow-lg bg-card border border-border z-10">
-                  <div className="py-1">
-                    {priorities.map((priority) => (
-                      <button key={priority} className={`block px-4 py-2 text-sm text-left w-full transition-colors ${selectedPriority === priority ? 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300' : 'text-foreground hover:bg-muted'}`} onClick={() => { setSelectedPriority(priority); setIsPriorityDropdownOpen(false); }}>
-                        <div className="flex items-center justify-between">
-                          <span>{priority}</span>
-                          {selectedPriority === priority && <Check className="h-4 w-4" />}
-                        </div>
                       </button>
                     ))}
                   </div>

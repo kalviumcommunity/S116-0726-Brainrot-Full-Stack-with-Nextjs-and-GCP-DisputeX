@@ -29,7 +29,7 @@ export const authService = {
     return { token, user: toPublicUser(user) };
   },
 
-  async login(email: string, password: string) {
+  async login(email: string, password: string, role?: 'ADMIN' | 'MERCHANT') {
     const user = await userRepository.findByEmail(email);
     if (!user) {
       throw new AppError('Invalid email or password.', 401, 'INVALID_CREDENTIALS');
@@ -38,6 +38,10 @@ export const authService = {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       throw new AppError('Invalid email or password.', 401, 'INVALID_CREDENTIALS');
+    }
+
+    if (role && user.role !== role) {
+      throw new AppError(`Access denied. This account does not have ${role.toLowerCase()} privileges.`, 403, 'INVALID_ROLE_FOR_PORTAL');
     }
 
     const token = generateToken(user.id, user.role);

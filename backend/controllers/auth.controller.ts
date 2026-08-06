@@ -18,8 +18,8 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 
 export const loginUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, password } = req.body;
-    const result = await authService.login(email, password);
+    const { email, password, role } = req.body;
+    const result = await authService.login(email, password, role);
     return sendSuccess(res, 200, {
       message: 'Login successful.',
       data: result,
