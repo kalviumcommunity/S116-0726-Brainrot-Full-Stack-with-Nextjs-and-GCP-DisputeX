@@ -37,6 +37,26 @@ export default function DisputeDetailPage() {
     if (id) fetchData();
   }, [id]);
 
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    try {
+      setIsDownloadingPdf(true);
+      const blob = await disputeService.downloadDisputePdf(id);
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `dispute-evidence-${id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+    } catch (error) {
+      console.error("Failed to download PDF package:", error);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -134,17 +154,32 @@ export default function DisputeDetailPage() {
               <p className="text-xs text-muted-foreground">Created on {new Date(dispute.createdAt).toLocaleString()}</p>
             </div>
             
-            <button 
-              disabled={isResolved || !!dispute.evidenceUrl}
-              className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-colors ${
-                isResolved || !!dispute.evidenceUrl 
-                  ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-90' 
-                  : 'bg-[#9b87f5] hover:bg-[#8a74f2] text-white'
-              }`}
-            >
-              <Send className="h-4 w-4" />
-              {dispute.evidenceUrl ? 'Response submitted' : 'Submit response'}
-            </button>
+            <div className="flex flex-wrap items-center gap-3">
+              <button 
+                onClick={handleDownloadPdf}
+                disabled={isDownloadingPdf}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium border border-border bg-background hover:bg-accent text-foreground transition-colors disabled:opacity-50"
+              >
+                {isDownloadingPdf ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FileText className="h-4 w-4" />
+                )}
+                Download PDF Package
+              </button>
+
+              <button 
+                disabled={isResolved || !!dispute.evidenceUrl}
+                className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-colors ${
+                  isResolved || !!dispute.evidenceUrl 
+                    ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-90' 
+                    : 'bg-[#9b87f5] hover:bg-[#8a74f2] text-white'
+                }`}
+              >
+                <Send className="h-4 w-4" />
+                {dispute.evidenceUrl ? 'Response submitted' : 'Submit response'}
+              </button>
+            </div>
           </div>
         </div>
 

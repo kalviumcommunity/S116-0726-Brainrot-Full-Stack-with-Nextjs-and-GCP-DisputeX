@@ -45,6 +45,12 @@ router.get(
   disputeController.getDisputeActivities
 );
 
+router.get(
+  '/:id/pdf',
+  validate(getDisputeByIdSchema),
+  disputeController.downloadDisputePdf
+);
+
 // Evidence upload (uses multer middleware)
 router.post(
   '/:id/evidence',

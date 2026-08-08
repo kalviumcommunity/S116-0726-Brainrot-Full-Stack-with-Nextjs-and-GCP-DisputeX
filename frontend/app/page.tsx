@@ -16,15 +16,17 @@ type Role = "merchant" | "admin";
 
 const Logo = () => (
   <div className="flex justify-center mb-6">
-    <img 
-      src="/logo.jpeg" 
-      alt="Dispute-X Logo" 
-      className="h-20 w-20 object-contain drop-shadow-sm rounded-full bg-white p-1"
-      onError={(e) => {
-        e.currentTarget.style.display = 'none';
-        e.currentTarget.parentElement!.innerHTML = '<div class="h-16 w-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-xl shadow-sm border border-blue-200">DX</div>';
-      }}
-    />
+    <div className="bg-white p-2.5 rounded-2xl shadow-md border border-slate-100 hover:scale-105 transition-transform duration-300">
+      <img 
+        src="/logo.png" 
+        alt="Dispute-X Logo" 
+        className="h-28 w-28 object-contain"
+        onError={(e) => {
+          e.currentTarget.style.display = 'none';
+          e.currentTarget.parentElement!.innerHTML = '<div class="h-16 w-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-xl shadow-sm border border-blue-200">DX</div>';
+        }}
+      />
+    </div>
   </div>
 );
 
@@ -132,20 +134,24 @@ export default function AuthPage() {
       </div>
 
       {/* Right Panel - Login Area */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-slate-50 relative">
-        <div className="w-full max-w-md">
-            <div className="bg-white p-8 sm:p-10 rounded-2xl shadow-sm border border-slate-200 transition-all">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-slate-50/50 relative overflow-hidden">
+        {/* Ambient background glows for the right panel */}
+        <div className="absolute top-[-20%] right-[-20%] w-[60%] h-[60%] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-[-20%] left-[-20%] w-[60%] h-[60%] bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none" />
+
+        <div className="w-full max-w-md relative z-10">
+            <div className="bg-white/95 backdrop-blur-sm p-8 sm:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-slate-200/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-300">
               <Logo />
 
               {/* Role Selection Tabs */}
-              <div className="flex p-1 mb-8 bg-slate-100 rounded-lg">
+              <div className="flex p-1 mb-8 bg-slate-100/80 rounded-xl border border-slate-200/50">
                 <button
                   type="button"
                   onClick={() => setRole("merchant")}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-md transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
                     role === "merchant" 
-                      ? "bg-white text-slate-900 shadow-sm" 
-                      : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
+                      ? "bg-white text-slate-900 shadow-sm border border-slate-200/25" 
+                      : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/30"
                   }`}
                 >
                   <Store className="w-4 h-4" />
@@ -154,10 +160,10 @@ export default function AuthPage() {
                 <button
                   type="button"
                   onClick={() => setRole("admin")}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-md transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
                     role === "admin" 
-                      ? "bg-white text-slate-900 shadow-sm" 
-                      : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
+                      ? "bg-white text-slate-900 shadow-sm border border-slate-200/25" 
+                      : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/30"
                   }`}
                 >
                   <ShieldCheck className="w-4 h-4" />
@@ -186,7 +192,7 @@ export default function AuthPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={role === "admin" ? "admin@disputex.com" : "name@example.com"}
                     required
-                    className="w-full h-11 bg-white text-slate-900 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20"
+                    className="w-full h-11 bg-white text-slate-900 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl"
                   />
                 </div>
 
@@ -199,13 +205,13 @@ export default function AuthPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     required
-                    className="w-full h-11 bg-white text-slate-900 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20"
+                    className="w-full h-11 bg-white text-slate-900 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl"
                   />
                 </div>
 
                 <Button 
                   type="submit" 
-                  className={`w-full h-11 mt-6 text-white shadow-sm transition-colors ${role === 'admin' ? 'bg-[#E12B2B] hover:bg-red-600' : 'bg-blue-600 hover:bg-blue-700'}`} 
+                  className={`w-full h-11 mt-6 text-white shadow-sm transition-all duration-200 rounded-xl hover:scale-[1.01] active:scale-[0.99] ${role === 'admin' ? 'bg-[#E12B2B] hover:bg-red-600' : 'bg-blue-600 hover:bg-blue-700'}`} 
                   disabled={busy}
                 >
                   {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

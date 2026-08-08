@@ -3,6 +3,7 @@ import { disputeService } from '../services/dispute.service';
 import { activityService } from '../services/activity.service';
 import { evidenceService } from '../services/evidence.service';
 import { disputeRepository } from '../repositories/dispute.repository';
+import { pdfService } from '../services/pdf.service';
 import { AppDisputeStatus } from '../types/app.types';
 import { sendSuccess, sendPaginated } from '../utils/response';
 import { parsePagination } from '../interfaces/request.interface';
@@ -89,6 +90,22 @@ export const disputeController = {
     try {
       const activities = await activityService.getActivitiesByDispute(req.params['id'] as string);
       return sendSuccess(res, 200, { data: { activities } });
+    } catch (error) {
+      return next(error);
+    }
+  },
+
+  async downloadDisputePdf(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      const dispute = await disputeRepository.findById(id);
+      if (!dispute) throw new AppError('Dispute not found.', 404, 'DISPUTE_NOT_FOUND');
+
+      const pdfBuffer = await pdfService.generateDisputePackage(dispute as any);
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="dispute-evidence-${id}.pdf"`);
+      return res.send(pdfBuffer);
     } catch (error) {
       return next(error);
     }

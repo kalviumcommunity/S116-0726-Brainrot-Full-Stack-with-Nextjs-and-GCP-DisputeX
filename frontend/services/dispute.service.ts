@@ -91,5 +91,12 @@ export const disputeService = {
   markNotificationAsRead: async (id: string) => {
     const response = await api.patch(`/notifications/${id}/read`);
     return response.data;
+  },
+
+  downloadDisputePdf: async (id: string) => {
+    const response = await api.get(`/disputes/${id}/pdf`, {
+      responseType: 'blob',
+    });
+    return response.data;
   }
 };

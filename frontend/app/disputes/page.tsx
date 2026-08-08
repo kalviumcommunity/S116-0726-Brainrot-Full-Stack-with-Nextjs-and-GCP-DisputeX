@@ -41,6 +41,7 @@ export default function DisputesPage() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
+  const [showFilters, setShowFilters] = useState(true);
 
   const filters = ["All", "OPEN", "UNDER_REVIEW", "WON", "LOST"];
 
@@ -123,11 +124,14 @@ export default function DisputesPage() {
           </div>
 
           {/* Filters */}
-          <div className="flex items-center bg-card border border-border rounded-lg p-1 overflow-x-auto w-full sm:w-auto text-sm">
-            <button className="p-2 text-muted-foreground hover:text-foreground transition-colors border-r border-border pr-3">
+          <div className="flex items-center bg-card border border-border rounded-lg p-1 overflow-x-auto w-full sm:w-auto text-sm transition-all duration-300">
+            <button 
+              onClick={() => setShowFilters(!showFilters)}
+              className={`p-2 text-muted-foreground hover:text-foreground transition-colors ${showFilters ? 'border-r border-border pr-3' : ''}`}
+            >
               <SlidersHorizontal className="h-4 w-4" />
             </button>
-            <div className="flex gap-1 pl-2">
+            <div className={`flex gap-1 pl-2 transition-all duration-300 ${showFilters ? 'opacity-100 max-w-[500px]' : 'opacity-0 max-w-0 pointer-events-none overflow-hidden pl-0'}`}>
               {filters.map((filter) => (
                 <button
                   key={filter}

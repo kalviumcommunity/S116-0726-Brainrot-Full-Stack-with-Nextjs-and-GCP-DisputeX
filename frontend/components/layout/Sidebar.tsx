@@ -2,11 +2,29 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { LayoutDashboard, ShieldAlert, Bell, User, Settings, LogOut } from "lucide-react";
 
 export default function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
+    const [userEmail, setUserEmail] = useState("");
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    const parsed = JSON.parse(userStr);
+                    if (parsed && parsed.email) {
+                        setUserEmail(parsed.email);
+                    }
+                } catch (e) {
+                    console.error("Failed to parse user email", e);
+                }
+            }
+        }
+    }, []);
 
     const menuItems = [
         { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -20,8 +38,8 @@ export default function Sidebar() {
         <aside className="w-64 min-w-[256px] shrink-0 bg-[#0B1021] text-slate-300 flex flex-col h-screen overflow-y-auto font-sans shadow-[4px_0_24px_rgba(0,0,0,0.4)] z-20 sticky top-0 border-r border-slate-700/60">
             {/* Logo area */}
             <div className="p-6 flex items-center gap-3">
-                <div className="bg-blue-600 rounded-md p-1.5 flex items-center justify-center">
-                    <ShieldAlert className="text-white h-5 w-5" />
+                <div className="bg-white rounded-xl p-1 flex items-center justify-center w-11 h-11 shadow-sm shrink-0">
+                    <img src="/logo-shield.png" alt="Dispute-X" className="h-9 w-9 object-contain" />
                 </div>
                 <div>
                     <h1 className="text-white font-bold text-lg leading-tight">Dispute-X</h1>
@@ -54,11 +72,11 @@ export default function Sidebar() {
                     className="bg-[#111827] rounded-xl p-3 flex items-center gap-3 border border-slate-800/50 hover:border-slate-700 transition-colors cursor-pointer group"
                 >
                     <div className="bg-indigo-900 text-indigo-200 rounded-full h-8 w-8 flex items-center justify-center text-sm font-semibold">
-                        {typeof window !== 'undefined' && JSON.parse(localStorage.getItem('user') || '{}').email?.charAt(0).toUpperCase() || 'M'}
+                        {userEmail ? userEmail.charAt(0).toUpperCase() : 'M'}
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-200 truncate">
-                            {typeof window !== 'undefined' && JSON.parse(localStorage.getItem('user') || '{}').email?.split('@')[0] || 'Merchant'}
+                            {userEmail ? userEmail.split('@')[0] : 'Merchant'}
                         </p>
                         <p className="text-[10px] text-slate-500 truncate">MERCHANT_ACCOUNT</p>
                     </div>

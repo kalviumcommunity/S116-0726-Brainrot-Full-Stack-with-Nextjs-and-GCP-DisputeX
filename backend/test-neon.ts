@@ -14,6 +14,7 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
   try {
+    // @ts-ignore
     const res = await prisma.$queryRaw`SELECT 1`;
     console.log('Success!', res);
   } catch(e) {

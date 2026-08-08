@@ -2,11 +2,29 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { LayoutDashboard, ShieldAlert, Bell, Users, Settings, LogOut } from "lucide-react";
 
 export default function AdminSidebar() {
     const pathname = usePathname();
     const router = useRouter();
+    const [userEmail, setUserEmail] = useState("");
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    const parsed = JSON.parse(userStr);
+                    if (parsed && parsed.email) {
+                        setUserEmail(parsed.email);
+                    }
+                } catch (e) {
+                    console.error("Failed to parse user email", e);
+                }
+            }
+        }
+    }, []);
 
     const menuItems = [
         { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
@@ -20,8 +38,8 @@ export default function AdminSidebar() {
         <aside className="w-[260px] min-w-[260px] shrink-0 bg-[#0B1021] text-slate-300 flex flex-col h-screen overflow-y-auto font-sans shadow-[4px_0_24px_rgba(0,0,0,0.2)] z-20 sticky top-0 border-r border-slate-800/50">
             {/* Logo area */}
             <div className="p-6 flex items-center gap-3">
-                <div className="bg-[#E12B2B] rounded-xl p-2 flex items-center justify-center shadow-[0_0_15px_rgba(225,43,43,0.25)]">
-                    <ShieldAlert className="text-white h-5 w-5" />
+                <div className="bg-white rounded-xl p-1 flex items-center justify-center w-11 h-11 shadow-[0_0_15px_rgba(255,255,255,0.1)] shrink-0">
+                    <img src="/logo-shield.png" alt="Dispute-X" className="h-9 w-9 object-contain" />
                 </div>
                 <div>
                     <h1 className="text-white font-bold text-base leading-tight tracking-tight">Dispute-X Admin</h1>
@@ -59,12 +77,12 @@ export default function AdminSidebar() {
                     className="bg-[#111827] rounded-xl p-3 flex items-center gap-3 border border-slate-800/80 hover:border-slate-700 transition-colors cursor-pointer group shadow-sm"
                 >
                     <div className="bg-[#E12B2B]/10 text-[#E12B2B] rounded-full h-9 w-9 flex items-center justify-center text-sm font-bold border border-[#E12B2B]/20">
-                        {typeof window !== 'undefined' && JSON.parse(localStorage.getItem('user') || '{}').email?.charAt(0).toUpperCase() || 'A'}
+                        {userEmail ? userEmail.charAt(0).toUpperCase() : 'A'}
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-slate-200 truncate">Administrator</p>
                         <p className="text-[11px] text-slate-500 truncate">
-                            {typeof window !== 'undefined' && JSON.parse(localStorage.getItem('user') || '{}').email || 'admin@disputex.com'}
+                            {userEmail || 'admin@disputex.com'}
                         </p>
                     </div>
                     <button 
