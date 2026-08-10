@@ -6,7 +6,7 @@ export interface Dispute {
   amount: number;
   currency: string;
   reason: string;
-  status: 'OPEN' | 'UNDER_REVIEW' | 'WON' | 'LOST';
+  status: 'OPEN' | 'UNDER_REVIEW' | 'WON' | 'LOST' | 'ESCALATED';
   evidenceUrl: string | null;
   createdAt: string;
   updatedAt: string;

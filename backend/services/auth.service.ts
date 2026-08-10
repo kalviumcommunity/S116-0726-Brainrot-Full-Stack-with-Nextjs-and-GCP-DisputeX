@@ -25,6 +25,38 @@ export const authService = {
     const hashed = await bcrypt.hash(password, BACKEND_CONSTANTS.BCRYPT_SALT_ROUNDS);
     const user = await userRepository.create({ email, password: hashed, role });
 
+    if (role === 'MERCHANT') {
+      const { PrismaClient } = require('@prisma/client');
+      const prisma = new PrismaClient();
+      
+      const merchant = await prisma.merchant.create({
+        data: {
+          name: email.split('@')[0],
+          businessId: `MCH-${Date.now().toString().slice(-6)}`,
+          contactEmail: email,
+        }
+      });
+      
+      const dispute = await prisma.dispute.create({
+        data: {
+          merchantId: merchant.id,
+          amount: 50.00,
+          currency: 'USD',
+          reason: 'Welcome to DisputeX! Please upload your first dummy evidence.',
+          status: 'OPEN',
+        }
+      });
+      
+      await prisma.activity.create({
+        data: {
+          disputeId: dispute.id,
+          action: 'MERCHANT_REGISTERED',
+          description: 'Merchant registered successfully and default dispute initialized.'
+        }
+      });
+      await prisma.$disconnect();
+    }
+
     const token = generateToken(user.id, user.role);
     return { token, user: toPublicUser(user) };
   },

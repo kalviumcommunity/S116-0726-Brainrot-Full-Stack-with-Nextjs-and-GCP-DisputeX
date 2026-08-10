@@ -2,16 +2,32 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, ShieldAlert, Bell, Users, Settings, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
+import { LayoutDashboard, ShieldAlert, Bell, Users, Settings, LogOut, Activity } from "lucide-react";
 
 export default function AdminSidebar() {
     const pathname = usePathname();
     const router = useRouter();
+    const [userEmail, setUserEmail] = useState("admin@disputex.com");
+    const [userInitial, setUserInitial] = useState("A");
+
+    useEffect(() => {
+        try {
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
+            if (user.email) {
+                setUserEmail(user.email);
+                setUserInitial(user.email.charAt(0).toUpperCase());
+            }
+        } catch (e) {
+            console.error("Error reading user from localStorage", e);
+        }
+    }, []);
 
     const menuItems = [
         { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
         { name: "All Disputes", href: "/admin/disputes", icon: ShieldAlert },
         { name: "Merchants", href: "/admin/merchants", icon: Users },
+        { name: "Activity", href: "/admin/activity", icon: Activity },
         { name: "Notifications", href: "/admin/notifications", icon: Bell, badge: 26 },
         { name: "Settings", href: "/admin/settings", icon: Settings },
     ];
@@ -59,12 +75,12 @@ export default function AdminSidebar() {
                     className="bg-[#111827] rounded-xl p-3 flex items-center gap-3 border border-slate-800/80 hover:border-slate-700 transition-colors cursor-pointer group shadow-sm"
                 >
                     <div className="bg-[#E12B2B]/10 text-[#E12B2B] rounded-full h-9 w-9 flex items-center justify-center text-sm font-bold border border-[#E12B2B]/20">
-                        {typeof window !== 'undefined' && JSON.parse(localStorage.getItem('user') || '{}').email?.charAt(0).toUpperCase() || 'A'}
+                        {userInitial}
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-slate-200 truncate">Administrator</p>
                         <p className="text-[11px] text-slate-500 truncate">
-                            {typeof window !== 'undefined' && JSON.parse(localStorage.getItem('user') || '{}').email || 'admin@disputex.com'}
+                            {userEmail}
                         </p>
                     </div>
                     <button 

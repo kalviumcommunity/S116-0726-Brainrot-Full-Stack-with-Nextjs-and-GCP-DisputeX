@@ -20,7 +20,7 @@ export default function NotificationsPage() {
     try {
       // In a real app, use the actual merchant ID from the logged-in user
       const response = await disputeService.getNotifications(DEMO_MERCHANT_ID);
-      setNotifications(response.notifications || []);
+      setNotifications(response.data?.notifications || []);
     } catch (error) {
       console.error("Failed to fetch notifications", error);
     } finally {

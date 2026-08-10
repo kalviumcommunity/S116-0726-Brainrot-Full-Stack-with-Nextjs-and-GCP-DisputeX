@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { adminService } from "@/services/admin.service";
 import { Dispute, Activity as ActivityType } from "@/services/dispute.service";
 import { format } from "date-fns";
+import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 export default function AdminDashboardPage() {
     const router = useRouter();
@@ -18,6 +19,7 @@ export default function AdminDashboardPage() {
     const [counts, setCounts] = useState({ total: 0, open: 0, escalated: 0, resolved: 0, merchants: 0 });
     const [latestDisputes, setLatestDisputes] = useState<Dispute[]>([]);
     const [recentActivity, setRecentActivity] = useState<ActivityType[]>([]);
+    const [casesByDay, setCasesByDay] = useState<{name: string, cases: number}[]>([]);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -32,6 +34,7 @@ export default function AdminDashboardPage() {
                 });
                 setLatestDisputes(data.recentDisputes);
                 setRecentActivity(data.recentActivities);
+                setCasesByDay(data.casesByDay || []);
             } catch (error) {
                 console.error("Failed to load dashboard data:", error);
             } finally {
@@ -93,16 +96,14 @@ export default function AdminDashboardPage() {
                             <h3 className="font-bold text-foreground">Cases by day (last 7)</h3>
                             <p className="text-sm text-muted-foreground">New disputes per day</p>
                         </div>
-                        <div className="flex-1 flex items-end justify-between px-4 pb-2 mt-4 text-xs text-muted-foreground">
-                            <div className="flex flex-col justify-between h-full py-2">
-                                <span>4</span><span>3</span><span>2</span><span>1</span><span>0</span>
-                            </div>
-                            <div className="flex-1 flex items-end justify-around border-b border-l border-border ml-4 pb-2">
-                                <span className="pt-2">Wed</span><span className="pt-2">Thu</span>
-                                <span className="pt-2">Fri</span><span className="pt-2">Sat</span>
-                                <span className="pt-2">Sun</span><span className="pt-2">Mon</span>
-                                <span className="pt-2">Tue</span>
-                            </div>
+                        <div className="flex-1 flex items-end justify-between px-4 pb-2 mt-4 text-xs text-muted-foreground h-[200px] w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={casesByDay} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#888888' }} />
+                                    <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                                    <Bar dataKey="cases" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
                         </div>
                     </div>
 
@@ -111,12 +112,37 @@ export default function AdminDashboardPage() {
                             <h3 className="font-bold text-foreground">Status distribution</h3>
                             <p className="text-sm text-muted-foreground">Open • escalated • resolved</p>
                         </div>
-                        <div className="flex-1 flex flex-col items-center justify-center mt-4">
-                            <div className="relative w-40 h-40 rounded-full border-[24px] border-indigo-500 mb-6">
-                                <div className="absolute top-[-24px] right-[-24px] w-40 h-40 rounded-full border-[24px] border-emerald-500" style={{ clipPath: 'polygon(50% 50%, 100% 0, 100% 100%, 50% 100%)' }}></div>
-                                <div className="absolute top-[-24px] right-[-24px] w-40 h-40 rounded-full border-[24px] border-red-500" style={{ clipPath: 'polygon(50% 50%, 50% 100%, 0 100%, 0 50%)' }}></div>
-                            </div>
-                            <div className="flex items-center justify-center gap-4 text-xs font-medium">
+                        <div className="flex-1 flex flex-col items-center justify-center mt-4 w-full h-[200px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={[
+                                            { name: 'Open', value: counts.open, color: '#6366f1' },
+                                            { name: 'Escalated', value: counts.escalated, color: '#ef4444' },
+                                            { name: 'Resolved', value: counts.resolved, color: '#10b981' }
+                                        ]}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={50}
+                                        outerRadius={70}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                        stroke="none"
+                                    >
+                                        {
+                                            [
+                                                { name: 'Open', value: counts.open, color: '#6366f1' },
+                                                { name: 'Escalated', value: counts.escalated, color: '#ef4444' },
+                                                { name: 'Resolved', value: counts.resolved, color: '#10b981' }
+                                            ].map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                            ))
+                                        }
+                                    </Pie>
+                                    <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                                </PieChart>
+                            </ResponsiveContainer>
+                            <div className="flex items-center justify-center gap-4 text-xs font-medium mt-2">
                                 <span className="flex items-center gap-1.5 text-indigo-500"><span className="w-2 h-2 rounded-full bg-indigo-500"></span>Open</span>
                                 <span className="flex items-center gap-1.5 text-red-500"><span className="w-2 h-2 rounded-full bg-red-500"></span>Escalated</span>
                                 <span className="flex items-center gap-1.5 text-emerald-500"><span className="w-2 h-2 rounded-full bg-emerald-500"></span>Resolved</span>

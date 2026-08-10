@@ -18,5 +18,10 @@ export const adminService = {
     
     const response = await api.get(url);
     return response.data;
+  },
+
+  getAuditLogs: async (page = 1, limit = 100) => {
+    const response = await api.get(`/admin/activities?page=${page}&limit=${limit}`);
+    return response.data;
   }
 };

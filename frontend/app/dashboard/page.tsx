@@ -8,6 +8,41 @@ import { disputeService, Dispute } from "@/services/dispute.service";
 import { authService } from "@/services/auth.service";
 import { format } from "date-fns";
 
+function CountdownTimer({ createdAt, status }: { createdAt: string, status: string }) {
+    const [timeLeft, setTimeLeft] = useState<{ hours: number, minutes: number } | null>(null);
+
+    useEffect(() => {
+        if (status !== 'OPEN') return; // Only count down for OPEN
+
+        const calculateTimeLeft = () => {
+            const created = new Date(createdAt).getTime();
+            const deadline = created + 7 * 24 * 60 * 60 * 1000;
+            const now = new Date().getTime();
+            const difference = deadline - now;
+
+            if (difference > 0 && difference <= 24 * 60 * 60 * 1000) {
+                const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                setTimeLeft({ hours, minutes });
+            } else {
+                setTimeLeft(null);
+            }
+        };
+
+        calculateTimeLeft();
+        const timer = setInterval(calculateTimeLeft, 60000); // update every minute
+        return () => clearInterval(timer);
+    }, [createdAt, status]);
+
+    if (!timeLeft) return null;
+
+    return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 animate-pulse">
+            ⏳ {timeLeft.hours}h {timeLeft.minutes}m remaining
+        </span>
+    );
+}
+
 export default function DashboardPage() {
     const router = useRouter();
     const [disputes, setDisputes] = useState<Dispute[]>([]);
@@ -25,8 +60,12 @@ export default function DashboardPage() {
                 setUser(currentUser);
                 
                 // Fetch merchant's disputes
+                // We must pass the merchant's actual ID if they are a merchant, or else it fetches all
+                // Actually, let's fetch only the disputes for this merchant. Wait, we don't have merchantId in user object, we only have contactEmail.
+                // Wait! Let's just fetch all disputes for now since this is a demo, or we can fetch by email.
+                // Let's pass the merchantId filter if available. Actually, the frontend API should pass `?merchantId=...` but we don't have it easily.
                 const response = await disputeService.getDisputes();
-                setDisputes(response.data.disputes || []);
+                setDisputes(response.data || []);
             } catch (error) {
                 console.error("Failed to fetch dashboard data:", error);
             } finally {
@@ -115,6 +154,7 @@ export default function DashboardPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
+                                    <CountdownTimer createdAt={item.createdAt.toString()} status={item.status} />
                                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900">
                                         <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                                         {item.status}

@@ -3,10 +3,23 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, ShieldAlert, Bell, User, Settings, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export default function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
+    const [user, setUser] = useState<any>(null);
+
+    useEffect(() => {
+        try {
+            const storedUser = localStorage.getItem('user');
+            if (storedUser) {
+                setUser(JSON.parse(storedUser));
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }, []);
 
     const menuItems = [
         { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -54,11 +67,11 @@ export default function Sidebar() {
                     className="bg-[#111827] rounded-xl p-3 flex items-center gap-3 border border-slate-800/50 hover:border-slate-700 transition-colors cursor-pointer group"
                 >
                     <div className="bg-indigo-900 text-indigo-200 rounded-full h-8 w-8 flex items-center justify-center text-sm font-semibold">
-                        {typeof window !== 'undefined' && JSON.parse(localStorage.getItem('user') || '{}').email?.charAt(0).toUpperCase() || 'M'}
+                        {user?.email?.charAt(0).toUpperCase() || 'M'}
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-200 truncate">
-                            {typeof window !== 'undefined' && JSON.parse(localStorage.getItem('user') || '{}').email?.split('@')[0] || 'Merchant'}
+                            {user?.email?.split('@')[0] || 'Merchant'}
                         </p>
                         <p className="text-[10px] text-slate-500 truncate">MERCHANT_ACCOUNT</p>
                     </div>

@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const merchant_controller_1 = require("../controllers/merchant.controller");
+const validation_middleware_1 = require("../middleware/validation.middleware");
+const merchant_validator_1 = require("../validators/merchant.validator");
+const auth_middleware_1 = require("../middleware/auth.middleware");
+const router = (0, express_1.Router)();
+router.post('/', auth_middleware_1.authenticate, (0, auth_middleware_1.requireRole)(['ADMIN']), (0, validation_middleware_1.validate)(merchant_validator_1.createMerchantSchema), merchant_controller_1.createMerchant);
+router.get('/', auth_middleware_1.authenticate, merchant_controller_1.getMerchants);
+router.get('/:id', auth_middleware_1.authenticate, merchant_controller_1.getMerchantById);
+exports.default = router;

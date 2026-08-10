@@ -35,6 +35,32 @@ export const getAdminStats = async (req: Request, res: Response, next: NextFunct
       }),
     ]);
 
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const recentDisputesForChart = await prisma.dispute.findMany({
+      where: { createdAt: { gte: sevenDaysAgo } },
+      select: { createdAt: true }
+    });
+
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const casesByDay: { name: string; cases: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      casesByDay.push({
+        name: days[d.getDay()],
+        cases: 0
+      });
+    }
+
+    recentDisputesForChart.forEach((d: { createdAt: Date }) => {
+      const dayName = days[d.createdAt.getDay()];
+      const entry = casesByDay.find(c => c.name === dayName);
+      if (entry) entry.cases++;
+    });
+
     return sendSuccess(res, 200, {
       data: {
         stats: {
@@ -52,6 +78,7 @@ export const getAdminStats = async (req: Request, res: Response, next: NextFunct
         },
         recentDisputes,
         recentActivities,
+        casesByDay,
       },
     });
   } catch (error) {
@@ -106,6 +133,38 @@ export const getAllDisputesAdmin = async (req: Request, res: Response, next: Nex
     return res.status(200).json({
       status: 'success',
       data: disputes,
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getAuditLogsAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { page, limit, skip } = parsePagination(req.query);
+
+    const [logs, total] = await Promise.all([
+      prisma.activity.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.activity.count(),
+    ]);
+
+    const formattedLogs = logs.map((log: any) => ({
+      id: log.id,
+      action: log.action,
+      entityType: 'Dispute',
+      entityId: log.disputeId,
+      details: { description: log.description },
+      createdAt: log.createdAt,
+    }));
+
+    return res.status(200).json({
+      status: 'success',
+      data: formattedLogs,
       meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
   } catch (error) {

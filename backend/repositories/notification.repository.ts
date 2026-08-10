@@ -10,8 +10,9 @@ export const notificationRepository = {
     return prisma.notification.create({ data });
   },
 
-  async findByMerchant(merchantId: string, isRead?: boolean) {
-    const where: any = { merchantId };
+  async findByMerchant(merchantId?: string, isRead?: boolean) {
+    const where: any = {};
+    if (merchantId && merchantId !== '00000000-0000-0000-0000-000000000000') where.merchantId = merchantId;
     if (isRead !== undefined) where.isRead = isRead;
     return prisma.notification.findMany({
       where,
@@ -30,7 +31,11 @@ export const notificationRepository = {
     });
   },
 
-  async countUnread(merchantId: string) {
-    return prisma.notification.count({ where: { merchantId, isRead: false } });
+  async countUnread(merchantId?: string) {
+    const where: any = { isRead: false };
+    if (merchantId && merchantId !== '00000000-0000-0000-0000-000000000000') where.merchantId = merchantId;
+    return prisma.notification.count({
+      where,
+    });
   },
 };
