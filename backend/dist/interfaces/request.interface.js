@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.parsePagination = void 0;
+/** Parses pagination params from a request query, with safe defaults */
+const parsePagination = (query, defaultLimit = 20, maxLimit = 100) => {
+    const page = Math.max(1, parseInt(query.page || '1', 10));
+    const limit = Math.min(maxLimit, Math.max(1, parseInt(query.limit || String(defaultLimit), 10)));
+    const skip = (page - 1) * limit;
+    return { page, limit, skip };
+};
+exports.parsePagination = parsePagination;

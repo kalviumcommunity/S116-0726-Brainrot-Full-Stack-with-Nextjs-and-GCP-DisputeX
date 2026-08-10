@@ -1,24 +1,18 @@
 import prisma from '../utils/prisma';
 import { notificationService } from '../services/notification.service';
 
-// Send reminder for disputes open for 5 days
+// Send reminder for all OPEN disputes
 export const reminderJob = async () => {
   try {
-    const fiveDaysAgo = new Date();
-    fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     
-    // To avoid spamming, we might want to check if a reminder was already sent.
-    // For simplicity in this demo, we'll just check if it's exactly 5 days old (approx)
-    // We can just find disputes created between 5 and 6 days ago
-    const sixDaysAgo = new Date();
-    sixDaysAgo.setDate(sixDaysAgo.getDate() - 6);
-
+    // Find disputes that are OPEN and less than 7 days old (7+ days are handled by escalationJob)
     const disputesToRemind = await prisma.dispute.findMany({
       where: {
         status: 'OPEN',
         createdAt: {
-          lt: fiveDaysAgo,
-          gte: sixDaysAgo,
+          gte: sevenDaysAgo,
         },
       },
     });

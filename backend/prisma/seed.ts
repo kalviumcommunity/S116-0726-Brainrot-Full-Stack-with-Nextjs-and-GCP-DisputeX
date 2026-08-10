@@ -1,62 +1,202 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import ws from 'ws';
+import prisma from '../utils/prisma';
 import bcrypt from 'bcryptjs';
-import { v4 as uuidv4 } from 'uuid';
-import * as dotenv from 'dotenv';
-dotenv.config();
-
-neonConfig.webSocketConstructor = ws;
 
 async function main() {
-  console.log('🌱 Starting database seeding...');
-  
-  const pool = new Pool({ connectionString: 'postgresql://neondb_owner:npg_oJ1UVqkmb6nu@ep-lively-bonus-ax0hei4s-pooler.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require' });
+  console.log('🌱 Starting database seeding with deterministic PRD scenarios...');
 
-  // 1. Create an Admin User
-  const adminEmail = 'admin@disputex.com';
-  const adminPassword = 'AdminPassword123!';
+  // 1. Clear existing mock data (but keep Admin User)
+  console.log('🧹 Clearing old activities, disputes, and merchants...');
+  await prisma.activity.deleteMany({});
+  await prisma.notification.deleteMany({});
+  await prisma.dispute.deleteMany({});
+  await prisma.merchant.deleteMany({});
+
+  // 2. Ensure Admin User exists
+  const adminEmail = 'admin@gmail.com';
+  const adminPassword = 'AdminPassword123';
   const hashedPassword = await bcrypt.hash(adminPassword, 10);
-
-  try {
-    const { rows } = await pool.query('SELECT email FROM "User" WHERE email = $1', [adminEmail]);
-    
-    if (rows.length === 0) {
-      await pool.query(
-        'INSERT INTO "User" (id, email, password, role, "updatedAt") VALUES ($1, $2, $3, $4, NOW())',
-        [uuidv4(), adminEmail, hashedPassword, 'ADMIN']
-      );
-      console.log(`✅ Admin user created: ${adminEmail}`);
-    } else {
-      console.log(`ℹ️ Admin user already exists: ${adminEmail}`);
-    }
-
-    // 2. Create Dummy Merchant
-    const merchantBusinessId = 'MCH-99901';
-    const { rows: merchantRows } = await pool.query('SELECT id FROM "Merchant" WHERE "businessId" = $1', [merchantBusinessId]);
-    
-    if (merchantRows.length === 0) {
-      const merchantId = uuidv4();
-      await pool.query(
-        'INSERT INTO "Merchant" (id, name, "businessId", "contactEmail", "updatedAt") VALUES ($1, $2, $3, $4, NOW())',
-        [merchantId, 'Acme Corp', merchantBusinessId, 'acme@example.com']
-      );
-      console.log(`✅ Dummy Merchant created: Acme Corp`);
-      
-      await pool.query(
-        'INSERT INTO "Dispute" (id, "merchantId", amount, currency, reason, status, "updatedAt") VALUES ($1, $2, $3, $4, $5, $6, NOW())',
-        [uuidv4(), merchantId, 450.00, 'USD', 'Customer claims item not received', 'OPEN']
-      );
-      console.log(`✅ Dummy Dispute created for Acme Corp`);
-    } else {
-      console.log(`ℹ️ Dummy Merchant already exists.`);
-    }
-
-    console.log('✅ Seeding finished.');
-  } catch (error) {
-    console.error('Error seeding database:', error);
-  } finally {
-    await pool.end();
+  
+  let adminUser = await prisma.user.findUnique({ where: { email: adminEmail } });
+  if (!adminUser) {
+    adminUser = await prisma.user.create({
+      data: {
+        email: adminEmail,
+        password: hashedPassword,
+        role: 'ADMIN'
+      }
+    });
+    console.log(`✅ Admin user created: ${adminEmail}`);
   }
+
+  // 3. Find all Merchant Users and create scenarios for them!
+  const merchantUsers = await prisma.user.findMany({ where: { role: 'MERCHANT' } });
+  
+  if (merchantUsers.length === 0) {
+    const defaultMerchant = await prisma.user.create({
+      data: { email: 'merchant@disputex.com', password: hashedPassword, role: 'MERCHANT' }
+    });
+    merchantUsers.push(defaultMerchant);
+    console.log('✅ Created default Merchant user');
+  }
+
+  const now = new Date();
+  const daysAgo = (days: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() - days);
+    return d;
+  };
+  const hoursAgo = (hours: number) => {
+    const d = new Date();
+    d.setHours(d.getHours() - hours);
+    return d;
+  };
+
+  for (const user of merchantUsers) {
+    // Ensure Merchant Profile exists
+    let merchant = await prisma.merchant.findFirst({ where: { contactEmail: user.email } });
+    if (!merchant) {
+      merchant = await prisma.merchant.create({
+        data: {
+          name: user.email.split('@')[0],
+          businessId: `MCH-${Date.now().toString().slice(-6)}-${Math.floor(Math.random()*100)}`,
+          contactEmail: user.email,
+        }
+      });
+    }
+
+    console.log(`📦 Creating specific PRD scenarios for merchant: ${user.email}...`);
+
+    // Scenario 1: Fresh dispute created today (OPEN)
+    await createDisputeScenario(merchant.id, {
+      amount: 120.50,
+      reason: 'Customer claims unauthorized transaction (Fresh)',
+      status: 'OPEN',
+      createdAt: hoursAgo(2),
+      hasEvidence: false
+    });
+
+    // Scenario 2: Active dispute, 3 days old (OPEN)
+    await createDisputeScenario(merchant.id, {
+      amount: 450.00,
+      reason: 'Item not received (Active)',
+      status: 'OPEN',
+      createdAt: daysAgo(3),
+      hasEvidence: false
+    });
+
+    // Scenario 3: 24-Hour Warning Countdown, 6.5 days old (OPEN)
+    const warningDisputeId = await createDisputeScenario(merchant.id, {
+      amount: 99.99,
+      reason: 'Defective product (24h Warning Countdown)',
+      status: 'OPEN',
+      createdAt: hoursAgo(7 * 24 - 12),
+      hasEvidence: false
+    });
+
+    // Scenario 4: Expired dispute past 7 days (ESCALATED - Auto Escalation)
+    const escalatedDisputeId = await createDisputeScenario(merchant.id, {
+      amount: 1500.00,
+      reason: 'Fraudulent charge (Auto-Escalated Demo)',
+      status: 'ESCALATED',
+      createdAt: daysAgo(8),
+      hasEvidence: false,
+      autoEscalated: true
+    });
+
+    // Scenario 5: Dispute with Evidence Submitted (UNDER_REVIEW)
+    const reviewDisputeId = await createDisputeScenario(merchant.id, {
+      amount: 75.00,
+      reason: 'Subscription cancelled but billed (Evidence Uploaded)',
+      status: 'UNDER_REVIEW',
+      createdAt: daysAgo(4),
+      hasEvidence: true
+    });
+
+    // Create a few mock notifications for the dashboard
+    await prisma.notification.createMany({
+      data: [
+        {
+          merchantId: merchant.id,
+          type: 'reminder',
+          title: 'Daily Reminder: Evidence Required',
+          description: `You have 3 days left to submit evidence for dispute ${warningDisputeId.slice(0, 8)}.`,
+          isRead: false,
+          createdAt: hoursAgo(1),
+        },
+        {
+          merchantId: merchant.id,
+          type: 'escalated',
+          title: 'Dispute Escalated',
+          description: `Dispute ${escalatedDisputeId.slice(0, 8)} has been escalated due to missed deadline.`,
+          isRead: false,
+          createdAt: daysAgo(1),
+        },
+        {
+          merchantId: merchant.id,
+          type: 'status_update',
+          title: 'Evidence Accepted',
+          description: `Dispute ${reviewDisputeId.slice(0, 8)} is now under review.`,
+          isRead: true,
+          createdAt: daysAgo(2),
+        }
+      ]
+    });
+  }
+
+  console.log('✅ Seeding finished successfully.');
 }
 
-main().catch(console.error);
+async function createDisputeScenario(merchantId: string, options: any) {
+  const dispute = await prisma.dispute.create({
+    data: {
+      merchantId,
+      amount: options.amount,
+      currency: 'USD',
+      reason: options.reason,
+      status: options.status,
+      createdAt: options.createdAt,
+      updatedAt: options.createdAt,
+      evidenceUrl: options.hasEvidence ? 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' : null
+    }
+  });
+
+  const activities = [
+    {
+      disputeId: dispute.id,
+      action: 'DISPUTE_OPENED',
+      description: `Dispute opened for reason: ${dispute.reason}`,
+      createdAt: options.createdAt
+    }
+  ];
+
+  if (options.hasEvidence) {
+    const evidenceTime = new Date(options.createdAt);
+    evidenceTime.setHours(evidenceTime.getHours() + 24); // Uploaded 1 day later
+    activities.push({
+      disputeId: dispute.id,
+      action: 'EVIDENCE_UPLOADED',
+      description: 'Evidence file uploaded successfully.',
+      createdAt: evidenceTime
+    });
+  }
+
+  if (options.autoEscalated) {
+    const escalationTime = new Date(options.createdAt);
+    escalationTime.setDate(escalationTime.getDate() + 7); // Escalated on day 7
+    activities.push({
+      disputeId: dispute.id,
+      action: 'ESCALATED',
+      description: 'Dispute was escalated due to lack of response within 7 days.',
+      createdAt: escalationTime
+    });
+  }
+
+  await prisma.activity.createMany({ data: activities });
+  return dispute.id;
+}
+
+main()
+  .catch((e) => {
+    console.error('Error seeding database:', e);
+    process.exit(1);
+  });

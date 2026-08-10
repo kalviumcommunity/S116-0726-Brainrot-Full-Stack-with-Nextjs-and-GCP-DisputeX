@@ -10,9 +10,10 @@ export const getNotifications = async (req: Request, res: Response, next: NextFu
       ? req.query.merchantId[0] as string
       : req.query.merchantId as string | undefined;
 
-    if (!merchantId) {
-      throw new AppError('merchantId query parameter is required.', 400, 'MISSING_MERCHANT_ID');
-    }
+    // For demo purposes, we will allow fetching all notifications if merchantId is not provided
+    // if (!merchantId) {
+    //   throw new AppError('merchantId query parameter is required.', 400, 'MISSING_MERCHANT_ID');
+    // }
 
     const isReadParam = req.query.isRead;
     const isReadStr = Array.isArray(isReadParam) ? isReadParam[0] : isReadParam;

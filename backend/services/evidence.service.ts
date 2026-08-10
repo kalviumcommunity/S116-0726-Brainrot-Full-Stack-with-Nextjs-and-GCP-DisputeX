@@ -40,8 +40,11 @@ export const evidenceService = {
     // 4. Upload to GCP (or mock if unconfigured)
     const url = await storageService.uploadFile(file.buffer, filePath, file.mimetype);
 
-    // 5. Persist the URL on the dispute
-    await evidenceRepository.setEvidenceUrl(disputeId, url);
+    // 5. Persist the URL on the dispute and update status to UNDER_REVIEW
+    await require('../utils/prisma').default.dispute.update({
+      where: { id: disputeId },
+      data: { evidenceUrl: url, status: 'UNDER_REVIEW' }
+    });
 
     // 6. Log the activity
     await activityService.createActivity(

@@ -48,7 +48,7 @@ export default function DisputesPage() {
     const fetchDisputes = async () => {
       try {
         const response = await disputeService.getDisputes();
-        setDisputes(response.disputes || []);
+        setDisputes(response.data || []);
       } catch (error) {
         console.error("Failed to fetch disputes:", error);
       } finally {
