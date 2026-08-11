@@ -41,6 +41,7 @@ export default function DisputesPage() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
+  const [showFilters, setShowFilters] = useState(true);
 
   const filters = ["All", "OPEN", "UNDER_REVIEW", "WON", "LOST"];
 
@@ -124,24 +125,29 @@ export default function DisputesPage() {
 
           {/* Filters */}
           <div className="flex items-center bg-card border border-border rounded-lg p-1 overflow-x-auto w-full sm:w-auto text-sm">
-            <button className="p-2 text-muted-foreground hover:text-foreground transition-colors border-r border-border pr-3">
+            <button 
+              onClick={() => setShowFilters(!showFilters)}
+              className={`p-2 text-muted-foreground hover:text-foreground transition-colors pr-3 ${showFilters ? "border-r border-border" : ""}`}
+            >
               <SlidersHorizontal className="h-4 w-4" />
             </button>
-            <div className="flex gap-1 pl-2">
-              {filters.map((filter) => (
-                <button
-                  key={filter}
-                  onClick={() => setActiveFilter(filter)}
-                  className={`px-3 py-1.5 rounded-md font-medium whitespace-nowrap transition-colors ${
-                    activeFilter === filter
-                      ? "bg-muted text-foreground"
-                      : "text-muted-foreground hover:bg-muted/50"
-                  }`}
-                >
-                  {filter === "All" ? "All" : filter.replace("_", " ")}
-                </button>
-              ))}
-            </div>
+            {showFilters && (
+              <div className="flex gap-1 pl-2 animate-in fade-in slide-in-from-left-2 duration-200">
+                {filters.map((filter) => (
+                  <button
+                    key={filter}
+                    onClick={() => setActiveFilter(filter)}
+                    className={`px-3 py-1.5 rounded-md font-medium whitespace-nowrap transition-colors ${
+                      activeFilter === filter
+                        ? "bg-muted text-foreground"
+                        : "text-muted-foreground hover:bg-muted/50"
+                    }`}
+                  >
+                    {filter === "All" ? "All" : filter.replace("_", " ")}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

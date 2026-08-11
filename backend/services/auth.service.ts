@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { userRepository } from '../repositories/user.repository';
 import { AppError } from '../interfaces/error.interface';
+import prisma from '../utils/prisma';
 import { envConfig } from '../config/env.config';
 import { BACKEND_CONSTANTS } from '../utils/constants';
 import { toPublicUser } from '../models/user.model';
@@ -26,9 +27,6 @@ export const authService = {
     const user = await userRepository.create({ email, password: hashed, role });
 
     if (role === 'MERCHANT') {
-      const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
-      
       const merchant = await prisma.merchant.create({
         data: {
           name: email.split('@')[0],
@@ -54,7 +52,6 @@ export const authService = {
           description: 'Merchant registered successfully and default dispute initialized.'
         }
       });
-      await prisma.$disconnect();
     }
 
     const token = generateToken(user.id, user.role);
