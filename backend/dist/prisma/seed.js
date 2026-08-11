@@ -14,8 +14,8 @@ async function main() {
     await prisma_1.default.dispute.deleteMany({});
     await prisma_1.default.merchant.deleteMany({});
     // 2. Ensure Admin User exists
-    const adminEmail = 'admin@disputex.com';
-    const adminPassword = 'AdminPassword123!';
+    const adminEmail = 'admin@gmail.com';
+    const adminPassword = 'AdminPassword123';
     const hashedPassword = await bcryptjs_1.default.hash(adminPassword, 10);
     let adminUser = await prisma_1.default.user.findUnique({ where: { email: adminEmail } });
     if (!adminUser) {
@@ -28,29 +28,16 @@ async function main() {
         });
         console.log(`✅ Admin user created: ${adminEmail}`);
     }
-    // 3. Ensure a Merchant User exists (for logging in to the dashboard)
-    const merchantEmail = 'merchant@disputex.com';
-    let merchantUser = await prisma_1.default.user.findUnique({ where: { email: merchantEmail } });
-    if (!merchantUser) {
-        merchantUser = await prisma_1.default.user.create({
-            data: {
-                email: merchantEmail,
-                password: hashedPassword,
-                role: 'MERCHANT'
-            }
+    // 3. Find all Merchant Users and create scenarios for them!
+    const merchantUsers = await prisma_1.default.user.findMany({ where: { role: 'MERCHANT' } });
+    if (merchantUsers.length === 0) {
+        const defaultMerchant = await prisma_1.default.user.create({
+            data: { email: 'merchant@disputex.com', password: hashedPassword, role: 'MERCHANT' }
         });
-        console.log(`✅ Dummy Merchant user created: ${merchantEmail}`);
+        merchantUsers.push(defaultMerchant);
+        console.log('✅ Created default Merchant user');
     }
-    // 3. Create Merchant Profile
-    const merchant = await prisma_1.default.merchant.create({
-        data: {
-            name: 'TechNova Solutions',
-            businessId: 'MCH-DEMO01',
-            contactEmail: merchantEmail,
-        }
-    });
     const now = new Date();
-    // Date generators
     const daysAgo = (days) => {
         const d = new Date();
         d.setDate(d.getDate() - days);
@@ -61,50 +48,90 @@ async function main() {
         d.setHours(d.getHours() - hours);
         return d;
     };
-    // 4. Create Deterministic Scenarios
-    console.log('📦 Creating specific PRD scenarios...');
-    // Scenario 1: Fresh dispute created today (OPEN)
-    await createDisputeScenario(merchant.id, {
-        amount: 120.50,
-        reason: 'Customer claims unauthorized transaction (Fresh)',
-        status: 'OPEN',
-        createdAt: hoursAgo(2),
-        hasEvidence: false
-    });
-    // Scenario 2: Active dispute, 3 days old (OPEN)
-    await createDisputeScenario(merchant.id, {
-        amount: 450.00,
-        reason: 'Item not received (Active)',
-        status: 'OPEN',
-        createdAt: daysAgo(3),
-        hasEvidence: false
-    });
-    // Scenario 3: 24-Hour Warning Countdown, 6.5 days old (OPEN)
-    // Deadline is 7 days, so it has 12 hours remaining
-    await createDisputeScenario(merchant.id, {
-        amount: 99.99,
-        reason: 'Defective product (24h Warning Countdown)',
-        status: 'OPEN',
-        createdAt: hoursAgo(7 * 24 - 12),
-        hasEvidence: false
-    });
-    // Scenario 4: Expired dispute past 7 days (ESCALATED - Auto Escalation)
-    await createDisputeScenario(merchant.id, {
-        amount: 1500.00,
-        reason: 'Fraudulent charge (Auto-Escalated Demo)',
-        status: 'ESCALATED',
-        createdAt: daysAgo(8),
-        hasEvidence: false,
-        autoEscalated: true
-    });
-    // Scenario 5: Dispute with Evidence Submitted (UNDER_REVIEW)
-    await createDisputeScenario(merchant.id, {
-        amount: 75.00,
-        reason: 'Subscription cancelled but billed (Evidence Uploaded)',
-        status: 'UNDER_REVIEW',
-        createdAt: daysAgo(4),
-        hasEvidence: true
-    });
+    for (const user of merchantUsers) {
+        // Ensure Merchant Profile exists
+        let merchant = await prisma_1.default.merchant.findFirst({ where: { contactEmail: user.email } });
+        if (!merchant) {
+            merchant = await prisma_1.default.merchant.create({
+                data: {
+                    name: user.email.split('@')[0],
+                    businessId: `MCH-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 100)}`,
+                    contactEmail: user.email,
+                }
+            });
+        }
+        console.log(`📦 Creating specific PRD scenarios for merchant: ${user.email}...`);
+        // Scenario 1: Fresh dispute created today (OPEN)
+        await createDisputeScenario(merchant.id, {
+            amount: 120.50,
+            reason: 'Customer claims unauthorized transaction (Fresh)',
+            status: 'OPEN',
+            createdAt: hoursAgo(2),
+            hasEvidence: false
+        });
+        // Scenario 2: Active dispute, 3 days old (OPEN)
+        await createDisputeScenario(merchant.id, {
+            amount: 450.00,
+            reason: 'Item not received (Active)',
+            status: 'OPEN',
+            createdAt: daysAgo(3),
+            hasEvidence: false
+        });
+        // Scenario 3: 24-Hour Warning Countdown, 6.5 days old (OPEN)
+        const warningDisputeId = await createDisputeScenario(merchant.id, {
+            amount: 99.99,
+            reason: 'Defective product (24h Warning Countdown)',
+            status: 'OPEN',
+            createdAt: hoursAgo(7 * 24 - 12),
+            hasEvidence: false
+        });
+        // Scenario 4: Expired dispute past 7 days (ESCALATED - Auto Escalation)
+        const escalatedDisputeId = await createDisputeScenario(merchant.id, {
+            amount: 1500.00,
+            reason: 'Fraudulent charge (Auto-Escalated Demo)',
+            status: 'ESCALATED',
+            createdAt: daysAgo(8),
+            hasEvidence: false,
+            autoEscalated: true
+        });
+        // Scenario 5: Dispute with Evidence Submitted (UNDER_REVIEW)
+        const reviewDisputeId = await createDisputeScenario(merchant.id, {
+            amount: 75.00,
+            reason: 'Subscription cancelled but billed (Evidence Uploaded)',
+            status: 'UNDER_REVIEW',
+            createdAt: daysAgo(4),
+            hasEvidence: true
+        });
+        // Create a few mock notifications for the dashboard
+        await prisma_1.default.notification.createMany({
+            data: [
+                {
+                    merchantId: merchant.id,
+                    type: 'reminder',
+                    title: 'Daily Reminder: Evidence Required',
+                    description: `You have 3 days left to submit evidence for dispute ${warningDisputeId.slice(0, 8)}.`,
+                    isRead: false,
+                    createdAt: hoursAgo(1),
+                },
+                {
+                    merchantId: merchant.id,
+                    type: 'escalated',
+                    title: 'Dispute Escalated',
+                    description: `Dispute ${escalatedDisputeId.slice(0, 8)} has been escalated due to missed deadline.`,
+                    isRead: false,
+                    createdAt: daysAgo(1),
+                },
+                {
+                    merchantId: merchant.id,
+                    type: 'status_update',
+                    title: 'Evidence Accepted',
+                    description: `Dispute ${reviewDisputeId.slice(0, 8)} is now under review.`,
+                    isRead: true,
+                    createdAt: daysAgo(2),
+                }
+            ]
+        });
+    }
     console.log('✅ Seeding finished successfully.');
 }
 async function createDisputeScenario(merchantId, options) {
@@ -149,6 +176,7 @@ async function createDisputeScenario(merchantId, options) {
         });
     }
     await prisma_1.default.activity.createMany({ data: activities });
+    return dispute.id;
 }
 main()
     .catch((e) => {

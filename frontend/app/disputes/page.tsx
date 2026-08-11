@@ -57,6 +57,12 @@ export default function DisputesPage() {
       }
     };
     fetchDisputes();
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get("q");
+      if (q) setSearchQuery(q);
+    }
   }, []);
 
   const handleSort = (key: string) => {
@@ -74,7 +80,9 @@ export default function DisputesPage() {
       const lowerQuery = searchQuery.toLowerCase();
       const matchesSearch = 
         dispute.id.toLowerCase().includes(lowerQuery) ||
-        dispute.reason.toLowerCase().includes(lowerQuery);
+        dispute.reason.toLowerCase().includes(lowerQuery) ||
+        dispute.status.toLowerCase().includes(lowerQuery) ||
+        `${dispute.currency} ${dispute.amount}`.toLowerCase().includes(lowerQuery);
       if (!matchesSearch) return false;
     }
 

@@ -8,6 +8,7 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const user_repository_1 = require("../repositories/user.repository");
 const error_interface_1 = require("../interfaces/error.interface");
+const prisma_1 = __importDefault(require("../utils/prisma"));
 const env_config_1 = require("../config/env.config");
 const constants_1 = require("../utils/constants");
 const user_model_1 = require("../models/user.model");
@@ -23,16 +24,14 @@ exports.authService = {
         const hashed = await bcryptjs_1.default.hash(password, constants_1.BACKEND_CONSTANTS.BCRYPT_SALT_ROUNDS);
         const user = await user_repository_1.userRepository.create({ email, password: hashed, role });
         if (role === 'MERCHANT') {
-            const { PrismaClient } = require('@prisma/client');
-            const prisma = new PrismaClient();
-            const merchant = await prisma.merchant.create({
+            const merchant = await prisma_1.default.merchant.create({
                 data: {
                     name: email.split('@')[0],
                     businessId: `MCH-${Date.now().toString().slice(-6)}`,
                     contactEmail: email,
                 }
             });
-            const dispute = await prisma.dispute.create({
+            const dispute = await prisma_1.default.dispute.create({
                 data: {
                     merchantId: merchant.id,
                     amount: 50.00,
@@ -41,14 +40,13 @@ exports.authService = {
                     status: 'OPEN',
                 }
             });
-            await prisma.activity.create({
+            await prisma_1.default.activity.create({
                 data: {
                     disputeId: dispute.id,
                     action: 'MERCHANT_REGISTERED',
                     description: 'Merchant registered successfully and default dispute initialized.'
                 }
             });
-            await prisma.$disconnect();
         }
         const token = generateToken(user.id, user.role);
         return { token, user: (0, user_model_1.toPublicUser)(user) };

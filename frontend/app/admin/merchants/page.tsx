@@ -7,6 +7,7 @@ import api from "@/lib/api";
 export default function AdminMerchantsPage() {
   const [merchants, setMerchants] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fetchMerchants = async () => {
@@ -20,7 +21,23 @@ export default function AdminMerchantsPage() {
       }
     };
     fetchMerchants();
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get("q");
+      if (q) setSearchQuery(q);
+    }
   }, []);
+
+  const filteredMerchants = merchants.filter((m) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      (m.name || "").toLowerCase().includes(q) ||
+      (m.businessId || "").toLowerCase().includes(q) ||
+      (m.contactEmail || "").toLowerCase().includes(q)
+    );
+  });
 
   return (
     <AdminAppShell>
@@ -31,7 +48,17 @@ export default function AdminMerchantsPage() {
               <span className="text-red-500">ADMIN</span>
             </div>
             <h1 className="text-3xl font-bold text-foreground mb-1">Merchants</h1>
-            <p className="text-muted-foreground">{merchants.length} merchants onboarded</p>
+            <p className="text-muted-foreground">{filteredMerchants.length} merchants shown</p>
+          </div>
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Filter merchants..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+            />
           </div>
         </div>
 
@@ -55,14 +82,14 @@ export default function AdminMerchantsPage() {
                       <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
                     </td>
                   </tr>
-                ) : merchants.length === 0 ? (
+                ) : filteredMerchants.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
                       No merchants found.
                     </td>
                   </tr>
                 ) : (
-                  merchants.map((merchant, index) => (
+                  filteredMerchants.map((merchant, index) => (
                     <tr key={index} className="hover:bg-muted/40 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">{merchant.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{merchant.businessId}</td>

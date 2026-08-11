@@ -20,6 +20,11 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
     useEffect(() => {
         // eslint-disable-next-line
         setMounted(true);
+        if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            const q = params.get("q");
+            if (q) setSearchQuery(q);
+        }
     }, []);
 
     const currentTheme = theme === 'system' ? systemTheme : theme;
@@ -29,9 +34,10 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
         setTheme(isDarkMode ? 'light' : 'dark');
     };
 
-    const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' && searchQuery.trim()) {
-            router.push(`/disputes`);
+    const handleSearchSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            router.push(`/disputes?q=${encodeURIComponent(searchQuery.trim())}`);
         }
     };
 
@@ -51,17 +57,16 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
                     <PanelLeft className={`h-5 w-5 transition-transform duration-300 ${sidebarOpen ? "" : "rotate-180"}`} />
                 </button>
 
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <form onSubmit={handleSearchSubmit} className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 cursor-pointer" onClick={handleSearchSubmit} />
                     <input
                         type="text"
-                        placeholder="Search disputes, transactions, evidence..."
+                        placeholder="Search disputes, reasons, or evidence..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={handleSearch}
                         className="w-full h-10 pl-10 pr-4 bg-muted border border-border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-foreground placeholder:text-muted-foreground"
                     />
-                </div>
+                </form>
             </div>
 
             <div className="flex items-center gap-4 text-muted-foreground ml-4">

@@ -23,5 +23,11 @@ export const adminService = {
   getAuditLogs: async (page = 1, limit = 100) => {
     const response = await api.get(`/admin/activities?page=${page}&limit=${limit}`);
     return response.data;
+  },
+
+  globalSearch: async (query: string) => {
+    if (!query || !query.trim()) return { disputes: [], merchants: [], activities: [], notifications: [] };
+    const response = await api.get(`/admin/global-search?q=${encodeURIComponent(query.trim())}`);
+    return response.data.data;
   }
 };

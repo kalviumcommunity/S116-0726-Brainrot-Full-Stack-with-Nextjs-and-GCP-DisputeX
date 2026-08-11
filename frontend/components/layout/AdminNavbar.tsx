@@ -1,9 +1,10 @@
 "use client";
 
-import { Search, Moon, Sun, Bell, PanelLeft } from "lucide-react";
+import { Moon, Sun, Bell, PanelLeft } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import AdminGlobalSearch from "@/components/admin/AdminGlobalSearch";
 
 interface AdminNavbarProps {
     onToggleSidebar: () => void;
@@ -45,14 +46,7 @@ export default function AdminNavbar({ onToggleSidebar, sidebarOpen }: AdminNavba
                     <PanelLeft className={`h-5 w-5 transition-transform duration-300 ${sidebarOpen ? "" : "rotate-180"}`} />
                 </button>
 
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <input
-                        type="text"
-                        placeholder="Search disputes, merchants, transactions..."
-                        className="w-full pl-10 pr-4 py-2 bg-muted border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                    />
-                </div>
+                <AdminGlobalSearch />
             </div>
 
             <div className="flex items-center gap-6">

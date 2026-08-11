@@ -10,7 +10,9 @@ exports.notificationRepository = {
         return prisma_1.default.notification.create({ data });
     },
     async findByMerchant(merchantId, isRead) {
-        const where = { merchantId };
+        const where = {};
+        if (merchantId && merchantId !== '00000000-0000-0000-0000-000000000000')
+            where.merchantId = merchantId;
         if (isRead !== undefined)
             where.isRead = isRead;
         return prisma_1.default.notification.findMany({
@@ -28,6 +30,11 @@ exports.notificationRepository = {
         });
     },
     async countUnread(merchantId) {
-        return prisma_1.default.notification.count({ where: { merchantId, isRead: false } });
+        const where = { isRead: false };
+        if (merchantId && merchantId !== '00000000-0000-0000-0000-000000000000')
+            where.merchantId = merchantId;
+        return prisma_1.default.notification.count({
+            where,
+        });
     },
 };
