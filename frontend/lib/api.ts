@@ -32,8 +32,8 @@ api.interceptors.response.use(
       // Clear token and redirect to login if not already there
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/admin/login'; // Adjust to merchant login if needed later
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
       }
     }
     return Promise.reject(error);

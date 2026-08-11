@@ -15,7 +15,7 @@ async function main() {
   const adminEmail = 'admin@gmail.com';
   const adminPassword = 'AdminPassword123';
   const hashedPassword = await bcrypt.hash(adminPassword, 10);
-  
+
   let adminUser = await prisma.user.findUnique({ where: { email: adminEmail } });
   if (!adminUser) {
     adminUser = await prisma.user.create({
@@ -30,7 +30,7 @@ async function main() {
 
   // 3. Find all Merchant Users and create scenarios for them!
   const merchantUsers = await prisma.user.findMany({ where: { role: 'MERCHANT' } });
-  
+
   if (merchantUsers.length === 0) {
     const defaultMerchant = await prisma.user.create({
       data: { email: 'merchant@disputex.com', password: hashedPassword, role: 'MERCHANT' }
@@ -58,7 +58,7 @@ async function main() {
       merchant = await prisma.merchant.create({
         data: {
           name: user.email.split('@')[0],
-          businessId: `MCH-${Date.now().toString().slice(-6)}-${Math.floor(Math.random()*100)}`,
+          businessId: `MCH-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 100)}`,
           contactEmail: user.email,
         }
       });

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, Store, ShieldCheck } from "lucide-react";
+import { Loader2, Store, ShieldCheck, Eye, EyeOff } from "lucide-react";
 import TextType from "@/components/TextType";
 import Prism from "@/components/Prism";
 
@@ -15,16 +15,17 @@ type Mode = "signin" | "signup";
 type Role = "merchant" | "admin";
 
 const Logo = () => (
-  <div className="flex justify-center mb-6">
+  <div className="flex flex-col items-center justify-center mb-6">
     <img 
-      src="/logo.jpeg" 
+      src="/logo.png" 
       alt="Dispute-X Logo" 
-      className="h-20 w-20 object-contain drop-shadow-sm rounded-full bg-white p-1"
+      className="h-16 w-16 object-contain drop-shadow-sm rounded-full bg-white p-1 mb-2"
       onError={(e) => {
         e.currentTarget.style.display = 'none';
         e.currentTarget.parentElement!.innerHTML = '<div class="h-16 w-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-xl shadow-sm border border-blue-200">DX</div>';
       }}
     />
+    <span className="text-2xl font-extrabold tracking-tight text-slate-900">Dispute-X</span>
   </div>
 );
 
@@ -36,6 +37,7 @@ export default function AuthPage() {
   const [role, setRole] = useState<Role>("merchant");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -192,15 +194,28 @@ export default function AuthPage() {
 
                 <div className="space-y-1.5">
                   <Label htmlFor="password" className="text-slate-700">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    className="w-full h-11 bg-white text-slate-900 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      className="w-full h-11 pr-10 bg-white text-slate-900 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 z-10 cursor-pointer text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 <Button 

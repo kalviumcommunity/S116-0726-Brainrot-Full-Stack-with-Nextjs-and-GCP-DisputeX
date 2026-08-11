@@ -132,3 +132,27 @@
     @apply font-sans;
   }
 }
+
+/* Override browser autofill styles */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  transition: background-color 5000s ease-in-out 0s;
+  -webkit-text-fill-color: var(--foreground) !important;
+  caret-color: var(--foreground);
+}
+
+/* Explicit overrides for light inputs (like on the login/auth page) */
+input.bg-white:-webkit-autofill,
+input.bg-white:-webkit-autofill:hover, 
+input.bg-white:-webkit-autofill:focus, 
+input.bg-white:-webkit-autofill:active,
+input.text-slate-900:-webkit-autofill,
+input.text-slate-900:-webkit-autofill:hover, 
+input.text-slate-900:-webkit-autofill:focus, 
+input.text-slate-900:-webkit-autofill:active {
+  -webkit-text-fill-color: #0f172a !important;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  caret-color: #0f172a !important;
+}
