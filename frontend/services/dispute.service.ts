@@ -91,5 +91,10 @@ export const disputeService = {
   markNotificationAsRead: async (id: string) => {
     const response = await api.patch(`/notifications/${id}/read`);
     return response.data;
+  },
+
+  markAllNotificationsAsRead: async (merchantId: string) => {
+    const response = await api.patch(`/notifications/read-all`, { merchantId });
+    return response.data;
   }
 };

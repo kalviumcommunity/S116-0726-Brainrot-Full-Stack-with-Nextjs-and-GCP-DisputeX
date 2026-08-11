@@ -160,8 +160,8 @@ export default function DisputesPage() {
         </div>
 
         {/* Table Section */}
-        <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden flex-1">
-          <div className="overflow-x-auto">
+        <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden flex-1 flex flex-col min-h-0">
+          <div className="overflow-auto flex-1">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-border bg-card">
