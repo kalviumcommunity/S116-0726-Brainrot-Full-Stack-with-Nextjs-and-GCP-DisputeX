@@ -1,9 +1,9 @@
 "use client";
 
-import { Search, Moon, Bell, Sun, PanelLeft } from "lucide-react";
+import { Moon, Bell, Sun, PanelLeft } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import MerchantGlobalSearch from "@/components/merchant/MerchantGlobalSearch";
 
 interface NavbarProps {
     onToggleSidebar: () => void;
@@ -14,17 +14,9 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
     const { theme, setTheme, systemTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
-    const router = useRouter();
 
     useEffect(() => {
-        // eslint-disable-next-line
         setMounted(true);
-        if (typeof window !== "undefined") {
-            const params = new URLSearchParams(window.location.search);
-            const q = params.get("q");
-            if (q) setSearchQuery(q);
-        }
     }, []);
 
     const currentTheme = theme === 'system' ? systemTheme : theme;
@@ -32,13 +24,6 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
 
     const toggleTheme = () => {
         setTheme(isDarkMode ? 'light' : 'dark');
-    };
-
-    const handleSearchSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (searchQuery.trim()) {
-            router.push(`/disputes?q=${encodeURIComponent(searchQuery.trim())}`);
-        }
     };
 
     if (!mounted) {
@@ -57,16 +42,7 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
                     <PanelLeft className={`h-5 w-5 transition-transform duration-300 ${sidebarOpen ? "" : "rotate-180"}`} />
                 </button>
 
-                <form onSubmit={handleSearchSubmit} className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 cursor-pointer" onClick={handleSearchSubmit} />
-                    <input
-                        type="text"
-                        placeholder="Search disputes, reasons, or evidence..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full h-10 pl-10 pr-4 bg-muted border border-border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-foreground placeholder:text-muted-foreground"
-                    />
-                </form>
+                <MerchantGlobalSearch />
             </div>
 
             <div className="flex items-center gap-4 text-muted-foreground ml-4">
