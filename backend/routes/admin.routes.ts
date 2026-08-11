@@ -1,11 +1,14 @@
 import { Router } from 'express';
-import { getAdminStats, getAllMerchantsAdmin, getAllDisputesAdmin, getAuditLogsAdmin } from '../controllers/admin.controller';
+import { getAdminStats, getAllMerchantsAdmin, getAllDisputesAdmin, getAuditLogsAdmin, globalSearchAdmin } from '../controllers/admin.controller';
 import { authenticate, requireRole } from '../middleware/auth.middleware';
 
 const router = Router();
 
 // All admin routes require authentication AND the ADMIN role
 router.use(authenticate, requireRole(['ADMIN']));
+
+// GET /api/admin/global-search — global search across all admin resources
+router.get('/global-search', globalSearchAdmin);
 
 // GET /api/admin/stats — dashboard stats (dispute counts, recent activity)
 router.get('/stats', getAdminStats);

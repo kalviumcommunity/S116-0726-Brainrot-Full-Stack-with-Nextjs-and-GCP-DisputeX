@@ -2,10 +2,10 @@ import prisma from './utils/prisma';
 
 async function checkDb() {
   const users = await prisma.user.findMany();
-  console.log('USERS:', users.map(u => ({ id: u.id, email: u.email, role: u.role })));
+  console.log('USERS:', users.map((u: any) => ({ id: u.id, email: u.email, role: u.role })));
 
   const merchants = await prisma.merchant.findMany();
-  console.log('MERCHANTS:', merchants.map(m => ({ id: m.id, contactEmail: m.contactEmail })));
+  console.log('MERCHANTS:', merchants.map((m: any) => ({ id: m.id, contactEmail: m.contactEmail })));
 
   const disputes = await prisma.dispute.findMany();
   console.log(`Total Disputes: ${disputes.length}`);

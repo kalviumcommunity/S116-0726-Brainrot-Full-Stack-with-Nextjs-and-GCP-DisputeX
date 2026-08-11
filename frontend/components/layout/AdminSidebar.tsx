@@ -5,6 +5,15 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { LayoutDashboard, ShieldAlert, Bell, Users, Settings, LogOut, Activity } from "lucide-react";
 
+export const ADMIN_MENU_ITEMS = [
+    { name: "Dashboard", href: "/admin/dashboard", description: "Overview, analytics & dispute metrics", icon: LayoutDashboard, keywords: ["dashboard", "home", "overview", "analytics"] },
+    { name: "All Disputes", href: "/admin/disputes", description: "View and manage all merchant dispute claims", icon: ShieldAlert, keywords: ["disputes", "all disputes", "claims", "cases"] },
+    { name: "Merchants", href: "/admin/merchants", description: "Onboarded merchants & business accounts", icon: Users, keywords: ["merchants", "stores", "sellers", "accounts"] },
+    { name: "Activity", href: "/admin/activity", description: "System audit logs & event timeline", icon: Activity, keywords: ["activity", "logs", "audit", "events", "timeline"] },
+    { name: "Notifications", href: "/admin/notifications", description: "Admin alerts & system notifications", icon: Bell, badge: 26, keywords: ["notifications", "alerts", "messages"] },
+    { name: "Settings", href: "/admin/settings", description: "System preferences & admin options", icon: Settings, keywords: ["settings", "preferences", "config", "profile"] },
+];
+
 export default function AdminSidebar() {
     const pathname = usePathname();
     const router = useRouter();
@@ -23,24 +32,17 @@ export default function AdminSidebar() {
         }
     }, []);
 
-    const menuItems = [
-        { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-        { name: "All Disputes", href: "/admin/disputes", icon: ShieldAlert },
-        { name: "Merchants", href: "/admin/merchants", icon: Users },
-        { name: "Activity", href: "/admin/activity", icon: Activity },
-        { name: "Notifications", href: "/admin/notifications", icon: Bell, badge: 26 },
-        { name: "Settings", href: "/admin/settings", icon: Settings },
-    ];
+    const menuItems = ADMIN_MENU_ITEMS;
 
     return (
         <aside className="w-[260px] min-w-[260px] shrink-0 bg-[#0B1021] text-slate-300 flex flex-col h-screen overflow-y-auto font-sans shadow-[4px_0_24px_rgba(0,0,0,0.2)] z-20 sticky top-0 border-r border-slate-800/50">
             {/* Logo area */}
             <div className="p-6 flex items-center gap-3">
-                <div className="bg-[#E12B2B] rounded-xl p-2 flex items-center justify-center shadow-[0_0_15px_rgba(225,43,43,0.25)]">
-                    <ShieldAlert className="text-white h-5 w-5" />
+                <div className="h-10 w-10 rounded-full overflow-hidden shrink-0 border border-slate-700/80 shadow-md flex items-center justify-center bg-white p-0.5">
+                    <img src="/logo.png" alt="Dispute X Logo" className="h-full w-full object-cover rounded-full" />
                 </div>
                 <div>
-                    <h1 className="text-white font-bold text-base leading-tight tracking-tight">Dispute-X Admin</h1>
+                    <h1 className="text-white font-bold text-base leading-tight tracking-tight">Dispute X Admin</h1>
                     <p className="text-[10px] text-slate-400 font-bold tracking-[0.15em] mt-0.5 uppercase">Control Center</p>
                 </div>
             </div>

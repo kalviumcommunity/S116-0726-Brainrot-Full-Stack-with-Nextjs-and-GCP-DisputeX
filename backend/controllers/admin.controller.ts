@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { DisputeStatus } from '@prisma/client';
 import prisma from '../utils/prisma';
 import { sendSuccess } from '../utils/response';
 import { parsePagination } from '../interfaces/request.interface';
@@ -171,3 +172,90 @@ export const getAuditLogsAdmin = async (req: Request, res: Response, next: NextF
     return next(error);
   }
 };
+
+export const globalSearchAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const q = (req.query.q as string || '').trim();
+    if (!q) {
+      return res.status(200).json({
+        status: 'success',
+        data: { disputes: [], merchants: [], activities: [], notifications: [] }
+      });
+    }
+
+    const ALL_STATUSES: DisputeStatus[] = ['OPEN', 'UNDER_REVIEW', 'WON', 'LOST', 'ESCALATED'];
+    const statusMatches = ALL_STATUSES.filter(s =>
+      s.toLowerCase().includes(q.toLowerCase())
+    );
+
+    const [disputes, merchants, activities, notifications] = await Promise.all([
+      prisma.dispute.findMany({
+        where: {
+          OR: [
+            { id: { contains: q, mode: 'insensitive' } },
+            { reason: { contains: q, mode: 'insensitive' } },
+            { merchant: { name: { contains: q, mode: 'insensitive' } } },
+            { merchant: { contactEmail: { contains: q, mode: 'insensitive' } } },
+            ...(statusMatches.length > 0 ? [{ status: { in: statusMatches } }] : [])
+          ]
+        },
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          merchant: { select: { id: true, name: true, contactEmail: true } }
+        }
+      }),
+      prisma.merchant.findMany({
+        where: {
+          OR: [
+            { name: { contains: q, mode: 'insensitive' } },
+            { contactEmail: { contains: q, mode: 'insensitive' } },
+            { businessId: { contains: q, mode: 'insensitive' } }
+          ]
+        },
+        take: 5,
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.activity.findMany({
+        where: {
+          OR: [
+            { action: { contains: q, mode: 'insensitive' } },
+            { description: { contains: q, mode: 'insensitive' } }
+          ]
+        },
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          dispute: { select: { id: true, reason: true } }
+        }
+      }),
+      prisma.notification.findMany({
+        where: {
+          OR: [
+            { title: { contains: q, mode: 'insensitive' } },
+            { description: { contains: q, mode: 'insensitive' } },
+            { type: { contains: q, mode: 'insensitive' } }
+          ]
+        },
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          merchant: { select: { name: true } }
+        }
+      })
+    ]);
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        disputes,
+        merchants,
+        activities,
+        notifications
+      }
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+

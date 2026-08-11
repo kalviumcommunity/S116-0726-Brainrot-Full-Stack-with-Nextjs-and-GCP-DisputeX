@@ -29,6 +29,12 @@ export default function AdminDisputesPage() {
       }
     };
     fetchDisputes();
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get("q");
+      if (q) setSearchQuery(q);
+    }
   }, []);
 
   const handleSort = (key: string) => {
@@ -41,7 +47,15 @@ export default function AdminDisputesPage() {
     if (selectedStatus !== "All statuses" && d.status !== selectedStatus) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      if (!d.id.toLowerCase().includes(q) && !(d.merchant?.name || "").toLowerCase().includes(q)) return false;
+      const matchesSearch = 
+        d.id.toLowerCase().includes(q) ||
+        (d.merchant?.name || "").toLowerCase().includes(q) ||
+        (d.merchant?.contactEmail || "").toLowerCase().includes(q) ||
+        (d.reason || "").toLowerCase().includes(q) ||
+        (d.evidenceUrl || "").toLowerCase().includes(q) ||
+        d.status.toLowerCase().includes(q) ||
+        `${d.currency} ${d.amount}`.toLowerCase().includes(q);
+      if (!matchesSearch) return false;
     }
     return true;
   });

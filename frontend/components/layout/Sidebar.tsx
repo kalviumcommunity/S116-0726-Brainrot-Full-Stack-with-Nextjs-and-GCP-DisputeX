@@ -11,14 +11,19 @@ export default function Sidebar() {
     const [user, setUser] = useState<any>(null);
 
     useEffect(() => {
-        try {
-            const storedUser = localStorage.getItem('user');
-            if (storedUser) {
-                setUser(JSON.parse(storedUser));
+        const loadUser = () => {
+            try {
+                const storedUser = localStorage.getItem('user');
+                if (storedUser) {
+                    setUser(JSON.parse(storedUser));
+                }
+            } catch (e) {
+                console.error(e);
             }
-        } catch (e) {
-            console.error(e);
-        }
+        };
+        loadUser();
+        window.addEventListener('storage', loadUser);
+        return () => window.removeEventListener('storage', loadUser);
     }, []);
 
     const menuItems = [
@@ -33,11 +38,11 @@ export default function Sidebar() {
         <aside className="w-64 min-w-[256px] shrink-0 bg-[#0B1021] text-slate-300 flex flex-col h-screen overflow-y-auto font-sans shadow-[4px_0_24px_rgba(0,0,0,0.4)] z-20 sticky top-0 border-r border-slate-700/60">
             {/* Logo area */}
             <div className="p-6 flex items-center gap-3">
-                <div className="bg-blue-600 rounded-md p-1.5 flex items-center justify-center">
-                    <ShieldAlert className="text-white h-5 w-5" />
+                <div className="h-10 w-10 rounded-full overflow-hidden shrink-0 border border-slate-700/80 shadow-md flex items-center justify-center bg-white p-0.5">
+                    <img src="/logo.png" alt="Dispute X Logo" className="h-full w-full object-cover rounded-full" />
                 </div>
                 <div>
-                    <h1 className="text-white font-bold text-lg leading-tight">Dispute-X</h1>
+                    <h1 className="text-white font-bold text-lg leading-tight">Dispute X</h1>
                     <p className="text-[10px] text-slate-400 font-semibold tracking-wider">DISPUTE PORTAL</p>
                 </div>
             </div>

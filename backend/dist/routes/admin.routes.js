@@ -6,6 +6,8 @@ const auth_middleware_1 = require("../middleware/auth.middleware");
 const router = (0, express_1.Router)();
 // All admin routes require authentication AND the ADMIN role
 router.use(auth_middleware_1.authenticate, (0, auth_middleware_1.requireRole)(['ADMIN']));
+// GET /api/admin/global-search — global search across all admin resources
+router.get('/global-search', admin_controller_1.globalSearchAdmin);
 // GET /api/admin/stats — dashboard stats (dispute counts, recent activity)
 router.get('/stats', admin_controller_1.getAdminStats);
 // GET /api/admin/merchants — paginated list of all merchants with dispute counts

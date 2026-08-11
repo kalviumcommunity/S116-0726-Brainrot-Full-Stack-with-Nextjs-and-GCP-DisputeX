@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAuditLogsAdmin = exports.getAllDisputesAdmin = exports.getAllMerchantsAdmin = exports.getAdminStats = void 0;
+exports.globalSearchAdmin = exports.getAuditLogsAdmin = exports.getAllDisputesAdmin = exports.getAllMerchantsAdmin = exports.getAdminStats = void 0;
 const prisma_1 = __importDefault(require("../utils/prisma"));
 const response_1 = require("../utils/response");
 const request_interface_1 = require("../interfaces/request.interface");
@@ -160,3 +160,85 @@ const getAuditLogsAdmin = async (req, res, next) => {
     }
 };
 exports.getAuditLogsAdmin = getAuditLogsAdmin;
+const globalSearchAdmin = async (req, res, next) => {
+    try {
+        const q = (req.query.q || '').trim();
+        if (!q) {
+            return res.status(200).json({
+                status: 'success',
+                data: { disputes: [], merchants: [], activities: [], notifications: [] }
+            });
+        }
+        const ALL_STATUSES = ['OPEN', 'UNDER_REVIEW', 'WON', 'LOST', 'ESCALATED'];
+        const statusMatches = ALL_STATUSES.filter(s => s.toLowerCase().includes(q.toLowerCase()));
+        const [disputes, merchants, activities, notifications] = await Promise.all([
+            prisma_1.default.dispute.findMany({
+                where: {
+                    OR: [
+                        { id: { contains: q, mode: 'insensitive' } },
+                        { reason: { contains: q, mode: 'insensitive' } },
+                        { merchant: { name: { contains: q, mode: 'insensitive' } } },
+                        { merchant: { contactEmail: { contains: q, mode: 'insensitive' } } },
+                        ...(statusMatches.length > 0 ? [{ status: { in: statusMatches } }] : [])
+                    ]
+                },
+                take: 5,
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    merchant: { select: { id: true, name: true, contactEmail: true } }
+                }
+            }),
+            prisma_1.default.merchant.findMany({
+                where: {
+                    OR: [
+                        { name: { contains: q, mode: 'insensitive' } },
+                        { contactEmail: { contains: q, mode: 'insensitive' } },
+                        { businessId: { contains: q, mode: 'insensitive' } }
+                    ]
+                },
+                take: 5,
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma_1.default.activity.findMany({
+                where: {
+                    OR: [
+                        { action: { contains: q, mode: 'insensitive' } },
+                        { description: { contains: q, mode: 'insensitive' } }
+                    ]
+                },
+                take: 5,
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    dispute: { select: { id: true, reason: true } }
+                }
+            }),
+            prisma_1.default.notification.findMany({
+                where: {
+                    OR: [
+                        { title: { contains: q, mode: 'insensitive' } },
+                        { description: { contains: q, mode: 'insensitive' } },
+                        { type: { contains: q, mode: 'insensitive' } }
+                    ]
+                },
+                take: 5,
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    merchant: { select: { name: true } }
+                }
+            })
+        ]);
+        return res.status(200).json({
+            status: 'success',
+            data: {
+                disputes,
+                merchants,
+                activities,
+                notifications
+            }
+        });
+    }
+    catch (error) {
+        return next(error);
+    }
+};
+exports.globalSearchAdmin = globalSearchAdmin;

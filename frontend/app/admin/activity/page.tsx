@@ -34,15 +34,24 @@ export default function AdminActivityPage() {
 
   useEffect(() => {
     fetchLogs();
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get("q");
+      if (q) setSearchQuery(q);
+    }
   }, []);
 
   const filteredLogs = logs.filter((log) => {
     if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
+    const q = searchQuery.toLowerCase().trim();
+    const detailsStr = log.details ? JSON.stringify(log.details).toLowerCase() : "";
     return (
+      (log.id && log.id.toLowerCase().includes(q)) ||
       log.action.toLowerCase().includes(q) ||
       log.entityType.toLowerCase().includes(q) ||
-      (log.entityId && log.entityId.toLowerCase().includes(q))
+      (log.entityId && log.entityId.toLowerCase().includes(q)) ||
+      (log.userId && log.userId.toLowerCase().includes(q)) ||
+      detailsStr.includes(q)
     );
   });
 
