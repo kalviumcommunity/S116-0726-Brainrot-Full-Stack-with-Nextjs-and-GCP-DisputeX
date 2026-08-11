@@ -97,7 +97,6 @@ export default function AdminActivityPage() {
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">TIMESTAMP</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">ACTION</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">ENTITY TYPE</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">ENTITY ID</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">DETAILS</th>
                 </tr>
@@ -105,13 +104,13 @@ export default function AdminActivityPage() {
               <tbody className="bg-card divide-y divide-border">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center">
+                    <td colSpan={4} className="px-6 py-12 text-center">
                       <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                     </td>
                   </tr>
                 ) : filteredLogs.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
+                    <td colSpan={4} className="px-6 py-12 text-center text-muted-foreground">
                       <div className="flex flex-col items-center justify-center">
                         <ActivityIcon className="h-10 w-10 text-muted-foreground mb-4 opacity-20" />
                         <p>No activity logs found.</p>
@@ -127,14 +126,21 @@ export default function AdminActivityPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <span className={getActionColor(log.action)}>{log.action}</span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                        {log.entityType}
-                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground font-mono text-xs">
                         {log.entityId || "—"}
                       </td>
-                      <td className="px-6 py-4 text-sm text-muted-foreground max-w-xs truncate">
-                        {log.details ? JSON.stringify(log.details) : "—"}
+                      <td className="px-6 py-4 text-sm text-muted-foreground max-w-xs truncate" title={typeof log.details === 'string' ? log.details : JSON.stringify(log.details)}>
+                        {(() => {
+                          if (!log.details) return "—";
+                          if (typeof log.details === 'object' && log.details.description) return log.details.description;
+                          if (typeof log.details === 'string') {
+                            try {
+                              const parsed = JSON.parse(log.details);
+                              if (parsed.description) return parsed.description;
+                            } catch (e) {}
+                          }
+                          return typeof log.details === 'string' ? log.details : JSON.stringify(log.details);
+                        })()}
                       </td>
                     </tr>
                   ))

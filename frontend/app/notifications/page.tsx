@@ -42,19 +42,39 @@ export default function NotificationsPage() {
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
+  const markAllAsRead = async () => {
+    try {
+      await disputeService.markAllNotificationsAsRead(DEMO_MERCHANT_ID);
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    } catch (error) {
+      console.error("Failed to mark all as read", error);
+    }
+  };
+
   return (
     <AppShell>
       <div className="w-full max-w-7xl mx-auto flex flex-col h-full font-sans p-2">
         {/* Header Section */}
-        <div className="mb-6">
-          <p className="text-xs font-semibold text-muted-foreground tracking-wider mb-1 uppercase">Notifications</p>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">Inbox</h1>
-          <p className="text-sm text-muted-foreground mt-1">{unreadCount} unread of {notifications.length} total</p>
+        <div className="mb-6 flex justify-between items-end max-w-5xl">
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground tracking-wider mb-1 uppercase">Notifications</p>
+            <h1 className="text-3xl font-bold text-foreground tracking-tight">Inbox</h1>
+            <p className="text-sm text-muted-foreground mt-1">{unreadCount} unread of {notifications.length} total</p>
+          </div>
+          
+          <button 
+            onClick={markAllAsRead}
+            disabled={unreadCount === 0 || isLoading}
+            className="inline-flex items-center px-4 py-2 border border-border rounded-md shadow-sm text-sm font-medium text-foreground bg-card hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Check className="h-4 w-4 mr-2" />
+            Mark all read
+          </button>
         </div>
 
         {/* Notifications List */}
-        <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden mb-6 flex-1 max-w-5xl">
-          <div className="flex flex-col divide-y divide-border">
+        <div className="bg-card rounded-xl border border-border shadow-sm mb-6 flex-1 max-w-5xl flex flex-col min-h-0">
+          <div className="flex flex-col divide-y divide-border overflow-y-auto">
             {isLoading ? (
               <div className="p-12 flex justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
