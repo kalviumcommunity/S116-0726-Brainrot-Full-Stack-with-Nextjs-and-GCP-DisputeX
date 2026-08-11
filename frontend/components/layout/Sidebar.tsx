@@ -5,6 +5,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, ShieldAlert, Bell, User, Settings, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
 
+export const MERCHANT_MENU_ITEMS = [
+    { name: "Dashboard", href: "/dashboard", description: "Merchant overview, dispute metrics & stats", icon: LayoutDashboard, keywords: ["dashboard", "home", "overview", "stats"] },
+    { name: "Disputes", href: "/disputes", description: "View and respond to customer disputes & chargebacks", icon: ShieldAlert, keywords: ["disputes", "claims", "cases", "chargebacks"] },
+    { name: "Notifications", href: "/notifications", description: "System alerts & deadline reminders", icon: Bell, keywords: ["notifications", "alerts", "reminders", "messages"] },
+    { name: "Profile", href: "/profile", description: "Account details & business profile", icon: User, keywords: ["profile", "account", "user", "business"] },
+    { name: "Settings", href: "/settings", description: "Portal settings & notification preferences", icon: Settings, keywords: ["settings", "preferences", "config"] },
+];
+
 export default function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
@@ -26,13 +34,7 @@ export default function Sidebar() {
         return () => window.removeEventListener('storage', loadUser);
     }, []);
 
-    const menuItems = [
-        { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-        { name: "Disputes", href: "/disputes", icon: ShieldAlert },
-        { name: "Notifications", href: "/notifications", icon: Bell },
-        { name: "Profile", href: "/profile", icon: User },
-        { name: "Settings", href: "/settings", icon: Settings },
-    ];
+    const menuItems = MERCHANT_MENU_ITEMS;
 
     return (
         <aside className="w-64 min-w-[256px] shrink-0 bg-[#0B1021] text-slate-300 flex flex-col h-screen overflow-y-auto font-sans shadow-[4px_0_24px_rgba(0,0,0,0.4)] z-20 sticky top-0 border-r border-slate-700/60">
