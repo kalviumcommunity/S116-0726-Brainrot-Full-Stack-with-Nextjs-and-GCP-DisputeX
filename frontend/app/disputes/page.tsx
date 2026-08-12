@@ -109,7 +109,7 @@ export default function DisputesPage() {
 
   return (
     <AppShell>
-      <div className="w-full max-w-7xl mx-auto flex flex-col h-full font-sans p-2">
+      <div className="w-full max-w-7xl mx-auto flex flex-col font-sans p-2">
         {/* Header Section */}
         <div className="mb-6">
           <p className="text-xs font-semibold text-muted-foreground tracking-wider mb-1 uppercase">Disputes</p>
@@ -160,8 +160,8 @@ export default function DisputesPage() {
         </div>
 
         {/* Table Section */}
-        <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden flex-1 flex flex-col min-h-0">
-          <div className="overflow-auto flex-1">
+        <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden flex flex-col">
+          <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-border bg-card">
