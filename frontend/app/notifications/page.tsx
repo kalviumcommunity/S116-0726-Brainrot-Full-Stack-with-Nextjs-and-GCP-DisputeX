@@ -53,7 +53,7 @@ export default function NotificationsPage() {
 
   return (
     <AppShell>
-      <div className="w-full max-w-7xl mx-auto flex flex-col h-full font-sans p-2">
+      <div className="w-full max-w-7xl mx-auto flex flex-col font-sans p-2">
         {/* Header Section */}
         <div className="mb-6 flex justify-between items-end max-w-5xl">
           <div>
@@ -73,8 +73,8 @@ export default function NotificationsPage() {
         </div>
 
         {/* Notifications List */}
-        <div className="bg-card rounded-xl border border-border shadow-sm mb-6 flex-1 max-w-5xl flex flex-col min-h-0">
-          <div className="flex flex-col divide-y divide-border overflow-y-auto">
+        <div className="bg-card rounded-xl border border-border shadow-sm mb-6 max-w-5xl flex flex-col">
+          <div className="flex flex-col divide-y divide-border">
             {isLoading ? (
               <div className="p-12 flex justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
