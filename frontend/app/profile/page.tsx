@@ -105,7 +105,7 @@ export default function ProfilePage() {
 
     return (
         <AppShell>
-            <div className="w-full max-w-7xl mx-auto flex flex-col h-full font-sans p-2">
+            <div className="w-full max-w-7xl mx-auto flex flex-col font-sans p-2">
                 {/* Header Section */}
                 <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
