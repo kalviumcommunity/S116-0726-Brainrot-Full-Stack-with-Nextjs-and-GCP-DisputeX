@@ -14,7 +14,7 @@ type UploadedFile = {
 
 export const evidenceService = {
   /**
-   * Uploads a file to GCP Storage and stores the URL on the Dispute record.
+   * Uploads a file to Cloudinary and stores the URL on the Dispute record.
    * Returns the updated evidence URL.
    */
   async uploadEvidence(disputeId: string, file: UploadedFile): Promise<string> {
@@ -37,7 +37,7 @@ export const evidenceService = {
     const safeFileName = file.originalname.replace(/\s+/g, '_');
     const filePath = `disputes/${disputeId}/evidence_${Date.now()}_${safeFileName}`;
 
-    // 4. Upload to GCP (or mock if unconfigured)
+    // 4. Upload to Cloudinary (or mock if unconfigured)
     const url = await storageService.uploadFile(file.buffer, filePath, file.mimetype);
 
     // 5. Persist the URL on the dispute and update status to UNDER_REVIEW
@@ -58,7 +58,9 @@ export const evidenceService = {
 
   /** Returns the current evidence URL for a dispute, or null */
   async getEvidenceUrl(disputeId: string): Promise<string | null> {
-    return evidenceRepository.getEvidenceUrl(disputeId);
+    const url = await evidenceRepository.getEvidenceUrl(disputeId);
+    if (!url) return null;
+    return storageService.getSignedDeliveryUrl(url);
   },
 
   /** Returns true if evidence has been submitted for a dispute */

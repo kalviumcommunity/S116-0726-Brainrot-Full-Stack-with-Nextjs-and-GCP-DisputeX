@@ -70,11 +70,16 @@ export const disputeService = {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await api.post(`/disputes/${id}/evidence`, formData, {
+    const response = await api.post(`/evidence/${id}/upload`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
+    return response.data;
+  },
+
+  getEvidenceUrl: async (id: string) => {
+    const response = await api.get(`/evidence/${id}`);
     return response.data;
   },
 

@@ -60,7 +60,7 @@ export default function DisputeDetailPage() {
       }
     } catch (error: any) {
       console.error("Upload failed", error);
-      setUploadError(error.response?.data?.error || "Failed to upload evidence");
+      setUploadError(error.response?.data?.message || error.response?.data?.error || "Failed to upload evidence");
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -229,16 +229,23 @@ export default function DisputeDetailPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">evidence_file</p>
-                      <p className="text-xs text-muted-foreground">Uploaded safely via GCP Storage</p>
+                      <p className="text-xs text-muted-foreground">Uploaded securely to Cloudinary</p>
                     </div>
-                    <a 
-                      href={dispute.evidenceUrl} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+                    <button 
+                      onClick={async () => {
+                        try {
+                          const res = await disputeService.getEvidenceUrl(dispute.id);
+                          if (res.data?.evidenceUrl) {
+                            window.open(res.data.evidenceUrl, '_blank');
+                          }
+                        } catch (e) {
+                          console.error('Failed to view evidence', e);
+                        }
+                      }}
+                      className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium text-left"
                     >
                       View
-                    </a>
+                    </button>
                   </div>
                 ) : (
                   "No evidence uploaded yet."

@@ -50,6 +50,12 @@ export const errorMiddleware = (
     return;
   }
 
+  // ── Multer (File Upload) errors ──────────────────────────────────────────────
+  if (err.name === 'MulterError') {
+    res.status(400).json({ status: 'error', message: err.message });
+    return;
+  }
+
   // ── Unknown / unexpected errors ──────────────────────────────────────────────
   logger.error(`Unhandled error on ${req.method} ${req.originalUrl}`, err);
 
