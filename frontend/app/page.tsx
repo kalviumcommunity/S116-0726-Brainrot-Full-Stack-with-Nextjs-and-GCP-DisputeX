@@ -78,7 +78,8 @@ export default function AuthPage() {
         router.replace("/dashboard");
       }
     } catch (error: any) {
-      const errorMsg = error.response?.data?.message || "Invalid credentials. Please try again.";
+      const firstError = error.response?.data?.errors?.[0]?.message;
+      const errorMsg = firstError || error.response?.data?.message || "Invalid credentials. Please try again.";
       toast.error(errorMsg);
     } finally {
       setBusy(false);
