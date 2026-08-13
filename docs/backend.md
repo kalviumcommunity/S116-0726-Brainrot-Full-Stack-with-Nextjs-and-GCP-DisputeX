@@ -21,7 +21,7 @@ backend/
 ├── models/               # Domain model contracts and entities
 ├── routes/               # API Router routing declarations
 ├── middleware/           # Auth validation, body checkers, and global error handling
-├── storage/              # Integration layer for external file hosting (Cloudinary/GCP)
+├── storage/              # Integration layer for external file hosting (Cloudinary)
 ├── validators/           # Input constraints enforcement structures
 └── server.ts / app.ts    # Application entry point and configurations
 ```

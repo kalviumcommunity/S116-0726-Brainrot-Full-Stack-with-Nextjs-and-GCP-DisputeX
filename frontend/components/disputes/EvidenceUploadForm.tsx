@@ -42,7 +42,7 @@ export function EvidenceUploadForm({ disputeId, onUploadSuccess }: EvidenceUploa
       setFile(null); // Reset form
     } catch (err: any) {
       console.error("Upload error:", err);
-      setError(err.response?.data?.error || "Failed to upload evidence.");
+      setError(err.response?.data?.message || err.response?.data?.error || "Failed to upload evidence.");
     } finally {
       setIsUploading(false);
     }

@@ -18,7 +18,7 @@ export const storageService = {
         {
           folder: 'disputex/evidence',
           public_id: fileName,
-          resource_type: 'auto', // Automatically detect image vs pdf
+          resource_type: mimeType === 'application/pdf' ? 'raw' : 'auto',
         },
         (error, result) => {
           if (error) {
@@ -35,5 +35,28 @@ export const storageService = {
       // Write the buffer to the stream and end it
       uploadStream.end(fileBuffer);
     });
+  },
+
+  /**
+   * Generates a secure signed delivery URL for PDFs to bypass restrictive access policies.
+   */
+  getSignedDeliveryUrl(url: string): string {
+    if (!url || !url.includes('cloudinary.com') || !url.endsWith('.pdf')) {
+      return url;
+    }
+    
+    // Extract public_id from Cloudinary URL
+    const urlParts = url.split('/upload/');
+    if (urlParts.length === 2) {
+      const pathAfterUpload = urlParts[1];
+      const publicId = pathAfterUpload.replace(/^v\d+\//, '');
+      
+      return cloudinary.utils.private_download_url(publicId, 'pdf', {
+        resource_type: 'raw',
+        type: 'upload',
+        expires_at: Math.floor(Date.now() / 1000) + 3600 // 1 hour
+      });
+    }
+    return url;
   }
 };
